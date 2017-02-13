@@ -231,8 +231,8 @@ namespace DXGI_DesktopDuplication
             var screenshot = e.Screenshot;
             if (hostScreenWidth == 0 && hostScreenHeight == 0)
             {
-                hostScreenWidth = e.Screenshot.Region.Width;
-                hostScreenHeight = e.Screenshot.Region.Height;
+                hostScreenWidth = (int)e.Screenshot.ScreenWidth;
+                hostScreenHeight = (int)e.Screenshot.ScreenHeight;
                 //UpdateImage(screenshot);
             }
             UpdateRegion(screenshot);
