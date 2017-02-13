@@ -27,6 +27,8 @@ using WindowsInput;
 using WindowsInput.Native;
 using HookerServer;
 using Controls.LiveControl;
+using DotRas;
+using System.Text;
 
 namespace DXGI_DesktopDuplication
 {
@@ -63,6 +65,9 @@ namespace DXGI_DesktopDuplication
         private WriteableBitmap BGWritable;
         private int ImageDivisor = 1;
         private int mtu = 1;
+
+        private DotRas.RasPhoneBook myRasPhonebook;
+        private static DotRas.RasDialer myRasDialer;
 
         public MainWindow()
         {
@@ -698,6 +703,84 @@ namespace DXGI_DesktopDuplication
             int newIQ = Int32.Parse(QualityBox.Text);
 
             await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(newMTU, newIQ);
+        }
+
+        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            myRasDialer.DialAsync();
+            MessageBox.Show("VPN Tunneling enabled");
+        }
+
+        private void myRasDialer_StateChanged(object sender, StateChangedEventArgs e)
+        {
+           
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            myRasPhonebook = new RasPhoneBook();
+            myRasPhonebook.Open();
+            RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
+            if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
+                this.myRasPhonebook.Entries.Add(entry);
+
+            myRasDialer = new RasDialer();
+            myRasDialer.StateChanged += myRasDialer_StateChanged;
+            myRasDialer.EntryName = "VPN_DXGI";
+            myRasDialer.PhoneBookPath = null;
+            myRasDialer.Credentials = new System.Net.NetworkCredential("vpn1", "Casper123");
+            myRasDialer.PhoneBookPath = myRasPhonebook.Path;
+            var phonbookpath = myRasDialer.PhoneBookPath;
+            if (phonbookpath != null)
+            {
+                //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
+                Debug.WriteLine("Path to phonebook for VPN Entry:: "+phonbookpath);
+                INIFile inif = new INIFile(phonbookpath);
+                inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
+                var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
+                Debug.WriteLine("DefaultGateway =" + msg2);
+            }
+        }
+    }
+    class INIFile
+    {
+        private string filePath;
+
+        [DllImport("kernel32")]
+        private static extern long WritePrivateProfileString(string section,
+        string key,
+        string val,
+        string filePath);
+
+        [DllImport("kernel32")]
+        private static extern int GetPrivateProfileString(string section,
+        string key,
+        string def,
+        StringBuilder retVal,
+        int size,
+        string filePath);
+
+        public INIFile(string filePath)
+        {
+            this.filePath = filePath;
+        }
+
+        public void Write(string section, string key, string value)
+        {
+            WritePrivateProfileString(section, key, value.ToLower(), this.filePath);
+        }
+
+        public string Read(string section, string key)
+        {
+            StringBuilder SB = new StringBuilder(255);
+            int i = GetPrivateProfileString(section, key, "", SB, 255, this.filePath);
+            return SB.ToString();
+        }
+
+        public string FilePath
+        {
+            get { return this.filePath; }
+            set { this.filePath = value; }
         }
     }
     public partial class NativeMethods
