@@ -206,7 +206,8 @@ namespace Providers.LiveControl.Server
             beginMessage.Number = ++ScreenshotCounter;
             beginMessage.Region = region;
             beginMessage.FinalLength = bitmapBytes.Length;
-
+            beginMessage.ScreenHeight = (uint)Screen.PrimaryScreen.Bounds.Height;
+            beginMessage.ScreenWidth = (uint)Screen.PrimaryScreen.Bounds.Width;
             Network.SendMessage(beginMessage, NetDeliveryMethod.ReliableOrdered, 0);
 
             // Send ResponseScreenshotMessage
