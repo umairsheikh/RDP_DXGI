@@ -741,6 +741,11 @@ namespace DXGI_DesktopDuplication
                 Debug.WriteLine("DefaultGateway =" + msg2);
             }
         }
+
+        private void checkBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            myRasDialer.DialAsyncCancel();
+        }
     }
     class INIFile
     {
