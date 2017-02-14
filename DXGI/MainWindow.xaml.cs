@@ -29,6 +29,7 @@ using HookerServer;
 using Controls.LiveControl;
 using DotRas;
 using System.Text;
+using SharpDX;
 
 namespace DXGI_DesktopDuplication
 {
@@ -50,7 +51,7 @@ namespace DXGI_DesktopDuplication
         private int hostScreenHeight;
         //Hook Servers
         InputSimulator inputSimulator;
-
+        BitmapImage BGBitmap;
         private Task updateImageThread;
 
         //Hook Client
@@ -65,6 +66,9 @@ namespace DXGI_DesktopDuplication
         private WriteableBitmap BGWritable;
         private int ImageDivisor = 1;
         private int mtu = 1;
+        private RenderTargetBitmap buffer;
+        private DrawingVisual drawingVisual = new DrawingVisual();
+
 
         private DotRas.RasPhoneBook myRasPhonebook;
         private static DotRas.RasDialer myRasDialer;
@@ -82,9 +86,7 @@ namespace DXGI_DesktopDuplication
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
             Console.WriteLine(Marshal.SizeOf(typeof(Vertex)));
         }
-
-
-
+        
         public async Task InitNetworkManagerClient()
         {
             NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
@@ -172,7 +174,7 @@ namespace DXGI_DesktopDuplication
 
 
 
-        //NOVA Network handshakes for HOST
+        // Network handshakes for HOST
         void Network_OnConnected(object sender, Network.ConnectedEventArgs e)
         {
             Status.Content = "Connected";
@@ -213,8 +215,8 @@ namespace DXGI_DesktopDuplication
             parseMessage(msgRecvd);
             //throw new NotImplementedException();
         }
-
-
+        
+        // Network handshakes for CLIENT
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
             await InitNetworkManagerClient();
@@ -263,29 +265,116 @@ namespace DXGI_DesktopDuplication
                 bitmap.StreamSource = memoryStream;
                 bitmap.EndInit();
 
-                BGImage.Width = hostScreenWidth;
-                BGImage.Height = hostScreenHeight;
                 //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
                 Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
 
                 if ((int)bitmap.Height == hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
                 {
+                    BGImage.Width = hostScreenWidth;
+                    BGImage.Height = hostScreenHeight;
                     BGWritable = new WriteableBitmap((BitmapSource)bitmap);
-                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
+                    buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
+                    var drawingVisual = new DrawingVisual();
+                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                    {
+
+                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                       // drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
+                        // drawingContext.DrawImage()  
+                        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                        //}
+                    }
+                    buffer.Render(drawingVisual);
+
+                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
                 }
                 else
                 {
-                    //int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
+
+                    
+
+                    int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
                     //int size = stride * bitmap.PixelHeight;
                     //byte[] bitmapByteArray = new byte[size];
-                    //bitmap.CopyPixels(bitmapByteArray, stride, 0);
+                    //bitmap.CopyPixels(bitmapByteArray, 0, 0);
+                    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height);
+                    ////BGWritable.AddDirtyRect(dirtyRectangle);
                     //BGWritable.Lock();
-                    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height), bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
+                    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
                     //BGWritable.Unlock();
-                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = bitmap)));
+                    //buffer =new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX,BGWritable.DpiY, PixelFormats.Pbgra32);
+                    var drawingVisual = new DrawingVisual();
+                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                    {
+
+                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                          drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
+                        // drawingContext.DrawImage()  
+                        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                        //}
+                    }
+                    buffer.Render(drawingVisual);
+                    //var img = new DrawingImage(drawingVisual.Drawing);
+
+                    // var mergedBitmap = mergetwoBitmaps(BGWritable,new WriteableBitmap(bitmap), dirtyRectangle,stride);
+
+                    //BGImage.Width = bitmap.Width;
+                    //BGImage.Height = bitmap.Height;
+                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                    BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
                 }
 
             }
+        }
+
+
+        private WriteableBitmap mergetwoBitmaps(WriteableBitmap bitmap1, WriteableBitmap bitmap2, Int32Rect rect,int stride)
+        {
+            //bitmap1 = new WriteableBitmap(new BitmapImage(new Uri("Koala.jpg", UriKind.Relative)));
+            //bitmap2 = new WriteableBitmap(new BitmapImage(new Uri("Desert.jpg", UriKind.Relative)));
+
+            //Get the pixel arrays of both bitmaps
+            int width = bitmap1.PixelWidth;
+            int height = bitmap1.PixelHeight;
+            int stride2 = bitmap1.BackBufferStride;
+
+            int[] pixels1 = new int[width * height];
+            int[] pixels2 = new int[pixels1.Length];
+
+            bitmap1.CopyPixels(pixels1, stride, 0);
+            bitmap2.CopyPixels(pixels2, stride, 0);
+
+            //Detect the rectangle that has difference
+            //int top = 0, bottom = 0, left = 0, right = 0;
+            //for (int i = 0; i < pixels1.Length; i++)
+            //{
+            //    if (pixels1[i] != pixels2[i])
+            //    {
+            //        int row = i / width;
+            //        int col = i % width;
+            //        top = Math.Min(top, row);
+            //        bottom = Math.Max(bottom, row);
+            //        left = Math.Min(left, col);
+            //        right = Math.Max(right, col);
+            //    }
+            //}
+            //Int32Rect rect = new Int32Rect(left, top, right - left + 1, bottom - top + 1);
+
+            //Copy pixels of the different rectangle in the second bitmap into another array
+            int[] pixelDiff = new int[rect.Width * rect.Height];
+            for (int i = 0; i < rect.Width; i++)
+            {
+                for (int j = 0; j < rect.Height; j++)
+                {
+                    pixelDiff[i + j * rect.Width] = pixels2[rect.X + i + (rect.Y + j) * width];
+                }
+            }
+
+            //Write the new pixels into the first bitmap
+            bitmap1.WritePixels(rect, pixelDiff, stride * rect.Width / width, 0);
+            return bitmap1;
         }
 
         private async Task UpdateImage(Model.LiveControl.Screenshot screenshot)
@@ -728,7 +817,7 @@ namespace DXGI_DesktopDuplication
             myRasDialer.StateChanged += myRasDialer_StateChanged;
             myRasDialer.EntryName = "VPN_DXGI";
             myRasDialer.PhoneBookPath = null;
-            myRasDialer.Credentials = new System.Net.NetworkCredential("vpn1", "Casper123");
+            myRasDialer.Credentials = new System.Net.NetworkCredential("vpn", "Casper123");
             myRasDialer.PhoneBookPath = myRasPhonebook.Path;
             var phonbookpath = myRasDialer.PhoneBookPath;
             if (phonbookpath != null)

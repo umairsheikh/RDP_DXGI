@@ -38,7 +38,7 @@ namespace Client.Forms
             using (var stream = new MemoryStream(screenshot.Image))
             {
 
-                Image image = Image.FromStream(stream);
+                System.Drawing.Image image = Image.FromStream(stream);
                 //Application.DoEvents();
                 //this.BackgroundImage = image;
                 if (ShowRegionOutlines)
