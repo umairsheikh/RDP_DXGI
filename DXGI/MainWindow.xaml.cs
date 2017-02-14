@@ -796,6 +796,28 @@ namespace DXGI_DesktopDuplication
 
         private void checkBox_Checked(object sender, RoutedEventArgs e)
         {
+            myRasPhonebook = new RasPhoneBook();
+            myRasPhonebook.Open();
+            RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
+            if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
+                this.myRasPhonebook.Entries.Add(entry);
+
+            myRasDialer = new RasDialer();
+            myRasDialer.StateChanged += myRasDialer_StateChanged;
+            myRasDialer.EntryName = "VPN_DXGI";
+            myRasDialer.PhoneBookPath = null;
+            myRasDialer.Credentials = new System.Net.NetworkCredential(vpnuserbox.Text, vpnpwdbox.Text);
+            myRasDialer.PhoneBookPath = myRasPhonebook.Path;
+            var phonbookpath = myRasDialer.PhoneBookPath;
+            if (phonbookpath != null)
+            {
+                //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
+                Debug.WriteLine("Path to phonebook for VPN Entry:: " + phonbookpath);
+                INIFile inif = new INIFile(phonbookpath);
+                inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
+                var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
+                Debug.WriteLine("DefaultGateway =" + msg2);
+            }
             myRasDialer.DialAsync();
             MessageBox.Show("VPN Tunneling enabled");
         }
@@ -807,33 +829,34 @@ namespace DXGI_DesktopDuplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            myRasPhonebook = new RasPhoneBook();
-            myRasPhonebook.Open();
-            RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
-            if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
-                this.myRasPhonebook.Entries.Add(entry);
+            //myRasPhonebook = new RasPhoneBook();
+            //myRasPhonebook.Open();
+            //RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
+            //if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
+            //    this.myRasPhonebook.Entries.Add(entry);
 
-            myRasDialer = new RasDialer();
-            myRasDialer.StateChanged += myRasDialer_StateChanged;
-            myRasDialer.EntryName = "VPN_DXGI";
-            myRasDialer.PhoneBookPath = null;
-            myRasDialer.Credentials = new System.Net.NetworkCredential("vpn", "Casper123");
-            myRasDialer.PhoneBookPath = myRasPhonebook.Path;
-            var phonbookpath = myRasDialer.PhoneBookPath;
-            if (phonbookpath != null)
-            {
-                //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
-                Debug.WriteLine("Path to phonebook for VPN Entry:: "+phonbookpath);
-                INIFile inif = new INIFile(phonbookpath);
-                inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
-                var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
-                Debug.WriteLine("DefaultGateway =" + msg2);
-            }
+            //myRasDialer = new RasDialer();
+            //myRasDialer.StateChanged += myRasDialer_StateChanged;
+            //myRasDialer.EntryName = "VPN_DXGI";
+            //myRasDialer.PhoneBookPath = null;
+            //myRasDialer.Credentials = new System.Net.NetworkCredential(vpnuserbox.Text, vpnpwdbox.Text);
+            //myRasDialer.PhoneBookPath = myRasPhonebook.Path;
+            //var phonbookpath = myRasDialer.PhoneBookPath;
+            //if (phonbookpath != null)
+            //{
+            //    //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
+            //    Debug.WriteLine("Path to phonebook for VPN Entry:: "+phonbookpath);
+            //    INIFile inif = new INIFile(phonbookpath);
+            //    inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
+            //    var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
+            //    Debug.WriteLine("DefaultGateway =" + msg2);
+            //}
         }
 
         private void checkBox_Unchecked(object sender, RoutedEventArgs e)
         {
             myRasDialer.DialAsyncCancel();
+          
         }
     }
     class INIFile
