@@ -242,6 +242,7 @@ namespace DXGI_DesktopDuplication
                 hostScreenHeight = (int)e.Screenshot.ScreenHeight;
                 //UpdateImage(screenshot);
             }
+
             UpdateRegion(screenshot);
             //if(hostScreenWidth == 1280 && hostSctreenHeight == 960)
             // Task.Factory.StartNew(()=> updateImageThread.)

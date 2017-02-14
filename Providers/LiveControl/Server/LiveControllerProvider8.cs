@@ -65,7 +65,7 @@ namespace Providers.LiveControl.Server
 
         private Stopwatch Timer { get; set; }
         public uint ScreenshotCounter = 0;
-        public static int mtu = 400;
+        public static int mtu = 250;
         public static int ImageQuality = 1;
         private bool CaptureLoop = true;
 

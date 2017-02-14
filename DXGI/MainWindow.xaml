@@ -33,9 +33,9 @@
             <Label Foreground="White" x:Name="QualityLabel" Content="Quality:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="332,45,0,0"/>
 
 
-            <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="False" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Margin="399,54,0,0"/>
-            <TextBox x:Name="MTUBox" HorizontalAlignment="Left" Height="17"  IsEnabled="False"  TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
-            <Button x:Name="UpdateQualityBtn" IsEnabled="False" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="UpdateQualityBtn_Click"  Margin="422,7,0,0"/>
+            <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="True" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Margin="399,54,0,0"/>
+            <TextBox x:Name="MTUBox" HorizontalAlignment="Left" Height="17"  IsEnabled="False"  TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
+            <Button x:Name="UpdateQualityBtn" IsEnabled="true" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="UpdateQualityBtn_Click"  Margin="422,7,0,0"/>
             <CheckBox x:Name="checkBox" Content="VPN" HorizontalAlignment="Left" Margin="533,9,0,0" VerticalAlignment="Top" Width="43" Height="19" IsEnabled="True" Foreground="#FFFF4141" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked" />
             <TextBox x:Name="vpnuserbox" HorizontalAlignment="Left" Height="18" Margin="592,32,0,0" TextWrapping="Wrap" Text="vpn1" VerticalAlignment="Top" Width="120"/>
             <TextBox x:Name="vpnpwdbox" HorizontalAlignment="Left" Height="18" Margin="592,55,0,0" TextWrapping="Wrap" Text="Casper123" VerticalAlignment="Top" Width="120"/>
