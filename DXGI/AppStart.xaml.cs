@@ -1,17 +1,26 @@
-﻿using Providers.Nova.Modules;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+using Providers.Nova.Modules;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 using Managers.Nova.Server;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Managers.LiveControl.Client;
-
 using Providers.LiveControl.Client;
 using Network;
 using Network.Messages.Nova;
@@ -19,45 +28,35 @@ using System.IO;
 using System.Drawing.Imaging;
 using RamGecTools;
 using HookerClient;
-using System.Windows.Input;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Windows.Media;
 using WindowsInput;
 using WindowsInput.Native;
 using HookerServer;
 using Controls.LiveControl;
 using DotRas;
-using System.Text;
 using SharpDX;
+
 
 namespace DXGI_DesktopDuplication
 {
-    /// <summary>
-    ///     MainWindow.xaml 
-    /// </summary>
-    public partial class MainWindow : Window
+    public partial class AppStart : Page
     {
+
         public static UpdateUI RefreshUI;
         private Thread duplicateThread = null;
 
-       // NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
-       // LiveControlManagerClient = Managers.NovaClient.Instance.LiveControlManager;
-
-        public Managers.Nova.Client.NovaManager NovaManagerClient= Managers.NovaClient.Instance.NovaManager;
-        public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient = Managers.NovaClient.Instance.LiveControlManager;
+        public Managers.Nova.Client.NovaManager NovaManagerClient;
+        public Managers.LiveControl.Client.LiveControlManager LiveControlManagerClient;
 
         public NovaManager NovaManagerServer;
         public Managers.LiveControl.Server.LiveControlManager LiveControlManagerServer;
 
-        private int hostScreenWidth;
-        private int hostScreenHeight;
+
         //Hook Servers
         private InputSimulator inputSimulator;
         private BitmapImage BGBitmap;
         private Task updateImageThread;
         private Queue<Model.LiveControl.Screenshot> LiveShots;
-
 
         //Hook Client
         RamGecTools.MouseHook mouseHook = new RamGecTools.MouseHook();
@@ -65,36 +64,39 @@ namespace DXGI_DesktopDuplication
         private LayoutManager layout;
         private ServerManager serverManger;
 
-        private double screenImagePositionX;
-        private double screenImagePositionY;
-        private GdiScreen gdiScreen1;
+        //Client Screen share 
         private WriteableBitmap BGWritable;
         private int ImageDivisor = 1;
         private int mtu = 1;
         private RenderTargetBitmap buffer;
         private DrawingVisual drawingVisual;
+        private double screenImagePositionX;
+        private double screenImagePositionY;
+        private int hostScreenWidth;
+        private int hostScreenHeight;
 
+
+        //VPN
         private DotRas.RasPhoneBook myRasPhonebook;
         private static DotRas.RasDialer myRasDialer;
 
-        public MainWindow()
+        public AppStart()
         {
             InitializeComponent();
-            //RefreshUI = UpdateImage;
-            //gdiScreen1 = new Controls.LiveControl.GdiScreen();
-            //test code here
+
             screenImagePositionX = SystemParameters.WorkArea.Width;
             screenImagePositionY = SystemParameters.WorkArea.Height;
 
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
-            Console.WriteLine(Marshal.SizeOf(typeof(Vertex)));
+
         }
+
 
         public async Task InitNetworkManagerClient()
         {
-            //NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
-            //LiveControlManagerClient = Managers.NovaClient.Instance.LiveControlManager;
+            NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
+            LiveControlManagerClient = Managers.NovaClient.Instance.LiveControlManager;
 
             LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
 
@@ -266,7 +268,7 @@ namespace DXGI_DesktopDuplication
             using (var stream = new System.IO.MemoryStream(screenshot.Image))
             {
 
-                Image image = Image.FromStream(stream);
+                System.Drawing.Image image = System.Drawing.Image.FromStream(stream);
                 var bitmap = new System.Windows.Media.Imaging.BitmapImage();
                 bitmap.BeginInit();
                 MemoryStream memoryStream = new MemoryStream();
@@ -395,7 +397,7 @@ namespace DXGI_DesktopDuplication
             using (var stream = new System.IO.MemoryStream(screenshot.Image))
             {
 
-                Image image = Image.FromStream(stream);
+                System.Drawing.Image image = System.Drawing.Image.FromStream(stream);
                 var bitmap = new System.Windows.Media.Imaging.BitmapImage();
                 bitmap.BeginInit();
                 MemoryStream memoryStream = new MemoryStream();
@@ -881,61 +883,7 @@ namespace DXGI_DesktopDuplication
         private void checkBox_Unchecked(object sender, RoutedEventArgs e)
         {
             myRasDialer.DialAsyncCancel();
-          
+
         }
-    }
-    class INIFile
-    {
-        private string filePath;
-
-        [DllImport("kernel32")]
-        private static extern long WritePrivateProfileString(string section,
-        string key,
-        string val,
-        string filePath);
-
-        [DllImport("kernel32")]
-        private static extern int GetPrivateProfileString(string section,
-        string key,
-        string def,
-        StringBuilder retVal,
-        int size,
-        string filePath);
-
-        public INIFile(string filePath)
-        {
-            this.filePath = filePath;
-        }
-
-        public void Write(string section, string key, string value)
-        {
-            WritePrivateProfileString(section, key, value.ToLower(), this.filePath);
-        }
-
-        public string Read(string section, string key)
-        {
-            StringBuilder SB = new StringBuilder(255);
-            int i = GetPrivateProfileString(section, key, "", SB, 255, this.filePath);
-            return SB.ToString();
-        }
-
-        public string FilePath
-        {
-            get { return this.filePath; }
-            set { this.filePath = value; }
-        }
-    }
-    public partial class NativeMethods
-    {
-        /// Return Type: BOOL->int  
-        ///X: int  
-        ///Y: int  
-        [System.Runtime.InteropServices.DllImportAttribute("user32.dll", EntryPoint = "SetCursorPos")]
-        [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        public static extern bool SetCursorPos(int X, int Y);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, UIntPtr dwExtraInfo);
-
     }
 }

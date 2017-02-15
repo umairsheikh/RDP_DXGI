@@ -16,8 +16,8 @@ namespace Providers.LiveControl.Client
     public class LiveControlProvider : Provider
     {
         private Dictionary<uint, Screenshot> pendingScreenshots;
+        public IList<Screenshot> liveScreenshots;
 
-       
         public LiveControlProvider(NetworkPeer network)
             : base(network)
         {
@@ -79,6 +79,7 @@ namespace Providers.LiveControl.Client
         {
             var RequestNewScreen = new RequestScreenshotMessage(mtu, quality);
             Network.SendMessage(RequestNewScreen);
+            Task.Delay(2000);
             Server.LiveControllerProvider8.mtu = mtu;
             
         }
