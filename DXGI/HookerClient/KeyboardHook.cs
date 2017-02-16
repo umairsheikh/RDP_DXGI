@@ -356,61 +356,70 @@ namespace RamGecTools
         /// </summary>
         private IntPtr  HookFunc(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            Int64 iwParam, ilParam;
-                    if (nCode >= 0)
+            try
+            {
+                Int64 iwParam, ilParam;
+                if (nCode >= 0)
+                {
+                    try
                     {
-                        try
-                        {
-                             iwParam = wParam.ToInt64();
-                             ilParam = lParam.ToInt64();
+                        iwParam = wParam.ToInt64();
+                        ilParam = lParam.ToInt64();
 
-                            Console.WriteLine("iw: " + iwParam + " key: " + Marshal.ReadInt32(lParam));
-                        }
-                        catch
-                        {
-                           
-                           return (IntPtr)null;
-                        }
-                        /* VECCHIA IDEA (NON CANCELLARE
-                         switch (iwParam){
-                            case 260:
-                                //chiamare metodo che gestisce questa cosa 
-                                HotKeyPress(Marshal.ReadInt32(lParam));
-                        
-                                return (IntPtr)1;    
-                        }    */
-                        if (KeyPress != null)
-                        {
-
-
-                            int type = 1; //1 significa key up 
-                            if ((iwParam == WM_KEYDOWN || iwParam == WM_SYSKEYDOWN))
-                            {
-                                type = 0; //key is down
-                            }
-                            KeyPress(type, (VKeys)Marshal.ReadInt32(lParam));
-
-                            //filtro per aluni tasti: tipo windows
-                            //IDEA : filtro anche control, alt , tab ecc, cosiì non mi serve fare quel lavoro 
-                            if ((VKeys)Marshal.ReadInt32(lParam) == VKeys.RWIN
-                                || (VKeys)Marshal.ReadInt32(lParam) == VKeys.LWIN
-                                || (VKeys)Marshal.ReadInt32(lParam) == VKeys.MENU
-                                || (VKeys)Marshal.ReadInt32(lParam) == VKeys.TAB)
-                            {
-                                Console.WriteLine("Questo tasto non può essere eseguito sul client");
-                                return (IntPtr)1;
-                            }
-
-                        }
-
-                        /*if ((iwParam == WM_KEYDOWN || iwParam == WM_SYSKEYDOWN))
-                            if (KeyDown != null)
-                                KeyDown((VKeys)Marshal.ReadInt32(lParam));
-                        if ((iwParam == WM_KEYUP || iwParam == WM_SYSKEYUP))
-                            if (KeyUp != null)
-                                KeyUp((VKeys)Marshal.ReadInt32(lParam));*/
+                        Console.WriteLine("iw: " + iwParam + " key: " + Marshal.ReadInt32(lParam));
                     }
-                    return CallNextHookEx(hookID, nCode, wParam, lParam);
+                    catch
+                    {
+
+                        return (IntPtr)null;
+                    }
+                    /* VECCHIA IDEA (NON CANCELLARE
+                     switch (iwParam){
+                        case 260:
+                            //chiamare metodo che gestisce questa cosa 
+                            HotKeyPress(Marshal.ReadInt32(lParam));
+
+                            return (IntPtr)1;    
+                    }    */
+                    if (KeyPress != null)
+                    {
+
+
+                        int type = 1; //1 significa key up 
+                        if ((iwParam == WM_KEYDOWN || iwParam == WM_SYSKEYDOWN))
+                        {
+                            type = 0; //key is down
+                        }
+                        KeyPress(type, (VKeys)Marshal.ReadInt32(lParam));
+
+                        //filtro per aluni tasti: tipo windows
+                        //IDEA : filtro anche control, alt , tab ecc, cosiì non mi serve fare quel lavoro 
+                        if ((VKeys)Marshal.ReadInt32(lParam) == VKeys.RWIN
+                            || (VKeys)Marshal.ReadInt32(lParam) == VKeys.LWIN
+                            || (VKeys)Marshal.ReadInt32(lParam) == VKeys.MENU
+                            || (VKeys)Marshal.ReadInt32(lParam) == VKeys.TAB)
+                        {
+                            Console.WriteLine("Questo tasto non può essere eseguito sul client");
+                            return (IntPtr)1;
+                        }
+
+                    }
+
+                    /*if ((iwParam == WM_KEYDOWN || iwParam == WM_SYSKEYDOWN))
+                        if (KeyDown != null)
+                            KeyDown((VKeys)Marshal.ReadInt32(lParam));
+                    if ((iwParam == WM_KEYUP || iwParam == WM_SYSKEYUP))
+                        if (KeyUp != null)
+                            KeyUp((VKeys)Marshal.ReadInt32(lParam));*/
+                }
+                return CallNextHookEx(hookID, nCode, wParam, lParam);
+            }
+            catch
+            {
+                Uninstall();
+                Install();
+               return CallNextHookEx(hookID, nCode, wParam, lParam);
+            }
             
         }
 

@@ -9,13 +9,15 @@
       Title="AppStart"
       Background="Black"
       ShowsNavigationUI="False"
+      Name="WindowMain"
+      
       >
 
-    <Grid Background="DarkKhaki"  Margin="0,0,0,84">
-        <Grid>
+    <Grid Name="gridkhaki" Background="DarkKhaki"  Margin="0,0,0,82">
+        <Grid x:Name="GridImage">
             <ScrollViewer Name="ScrollView" HorizontalAlignment="Center" VerticalAlignment="Center" Height="450" Width="800" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Image  HorizontalAlignment="Center" VerticalAlignment="Center" Name="BGImage"/>
+                    <Image  HorizontalAlignment="Center" VerticalAlignment="Center" Name="BGImage" Height="600" Width="800"  MouseLeave="BGImage_MouseLeave"/>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
@@ -38,12 +40,17 @@
             <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="True" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Margin="399,54,0,0"/>
             <TextBox x:Name="MTUBox" HorizontalAlignment="Left" Height="17"  IsEnabled="False"  TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
             <Button x:Name="UpdateQualityBtn" IsEnabled="true" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="UpdateQualityBtn_Click"  Margin="422,7,0,0"/>
+            <CheckBox x:Name="fullscreen" Content="Maximize" HorizontalAlignment="Left" Margin="577,0,0,50" VerticalAlignment="Bottom" Width="72" Height="21" IsEnabled="True" Foreground="#FF23CDAE" Checked="fullscreen_Checked"  Unchecked="fullscreen_Unchecked" />
             <CheckBox x:Name="checkBox" Content="VPN" HorizontalAlignment="Left" Margin="533,9,0,0" VerticalAlignment="Top" Width="43" Height="19" IsEnabled="True" Foreground="#FFFF4141" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked" />
             <TextBox x:Name="vpnuserbox" HorizontalAlignment="Left" Height="18" Margin="592,32,0,0" TextWrapping="Wrap" Text="vpn1" VerticalAlignment="Top" Width="120"/>
             <TextBox x:Name="vpnpwdbox" HorizontalAlignment="Left" Height="18" Margin="592,55,0,0" TextWrapping="Wrap" Text="Casper123" VerticalAlignment="Top" Width="120"/>
             <Label x:Name="vpnusr" Content="User-VPN" HorizontalAlignment="Left" Margin="528,32,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1"/>
             <Label x:Name="vpnpwd" Content="Pwd-VPN" HorizontalAlignment="Left" Margin="528,53,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1" />
             <TextBox x:Name="updateBox" HorizontalAlignment="Left" Height="73" Margin="717,3,0,0" TextWrapping="Wrap" Text="Updates..." VerticalAlignment="Top" Width="165"/>
+            <CheckBox x:Name="MouseKeyboardIO" Content="Mouse/Key" HorizontalAlignment="Left" Margin="644,10,0,0" VerticalAlignment="Top" Checked="MouseKeyboardIO_Checked" Foreground="#FF80EA28"/>
+
         </Grid>
+
     </Grid>
+  
 </Page>

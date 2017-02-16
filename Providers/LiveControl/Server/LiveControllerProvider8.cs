@@ -66,7 +66,7 @@ namespace Providers.LiveControl.Server
         private Stopwatch Timer { get; set; }
         public uint ScreenshotCounter = 0;
         public static int mtu = 250;
-        public static int ImageQuality = 1;
+        public static int ImageQuality = 2;
         private bool CaptureLoop = true;
 
         public LiveControllerProvider8(NetworkPeer network)

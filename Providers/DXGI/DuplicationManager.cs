@@ -220,7 +220,7 @@ namespace DXGI_DesktopDuplication
                                     //exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
                                     System.Drawing.Rectangle rect = new System.Drawing.Rectangle(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width, dirtyRectangle.Height);
 
-                                    if (width > dirtyRectangle.Width && height > dirtyRectangle.Height)
+                                    if (dirtyRectangle.Width <width/2  &&  dirtyRectangle.Height < height/2)
                                          FireNewFrameEvent(exactrectangle, rect);
                                     else
                                         FireNewFrameEvent(Texture2DToBitmap(), new System.Drawing.Rectangle(0, 0, width, height));

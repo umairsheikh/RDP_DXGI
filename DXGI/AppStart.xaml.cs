@@ -80,19 +80,17 @@ namespace DXGI_DesktopDuplication
         private DotRas.RasPhoneBook myRasPhonebook;
         private static DotRas.RasDialer myRasDialer;
 
+ 
         public AppStart()
         {
             InitializeComponent();
-
             screenImagePositionX = SystemParameters.WorkArea.Width;
             screenImagePositionY = SystemParameters.WorkArea.Height;
 
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
-
         }
-
-
+        
         public async Task InitNetworkManagerClient()
         {
             NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
@@ -249,18 +247,19 @@ namespace DXGI_DesktopDuplication
             {
                 hostScreenWidth = (int)e.Screenshot.ScreenWidth;
                 hostScreenHeight = (int)e.Screenshot.ScreenHeight;
+               
             }
             //LiveShots.Enqueue(screenshot);
             //if(LiveShots.Count == 0)
             //{
-            //    //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
+            //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => UpdateRegion(screenshot))));
 
-            //    Task.Run(() => updateRegionContinue());
+           //   Task.Run(() => updateRegionContinue());
             //}
             UpdateRegion(screenshot);
             //if(hostScreenWidth == 1280 && hostSctreenHeight == 960)
             // Task.Factory.StartNew(()=> updateImageThread.)
-            //LiveControlManager.RequestScreenshot();
+            //LiveControlManagerClient.RequestScreenshot();
         }
 
         private async Task UpdateRegion(Model.LiveControl.Screenshot screenshot)
@@ -280,16 +279,17 @@ namespace DXGI_DesktopDuplication
                 bitmap.EndInit();
 
                 //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
-                Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
+                //Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
 
-                if ((int)bitmap.Height == hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
+                if ((int)bitmap.Height== hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
                 {
                     BGImage.Width = hostScreenWidth;
                     BGImage.Height = hostScreenHeight;
                     BGWritable = new WriteableBitmap((BitmapSource)bitmap);
                     buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
+                
                     var drawingVisual = new DrawingVisual();
-                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                     {
 
                         drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
@@ -301,17 +301,15 @@ namespace DXGI_DesktopDuplication
                     }
                     buffer.Render(drawingVisual);
                     await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+
                 }
                 else
                 {
-
-
-
                     int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
                     //int size = stride * bitmap.PixelHeight;
                     //byte[] bitmapByteArray = new byte[size];
                     //bitmap.CopyPixels(bitmapByteArray, 0, 0);
-                    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height);
+                    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width/ImageDivisor, (Int32)bitmap.Height/ImageDivisor);
                     ////BGWritable.AddDirtyRect(dirtyRectangle);
                     //BGWritable.Lock();
                     //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
@@ -321,10 +319,10 @@ namespace DXGI_DesktopDuplication
                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                     {
 
-                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
-                        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
+                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X/ImageDivisor, screenshot.Region.Y/ImageDivisor, screenshot.Region.Width/ImageDivisor, screenshot.Region.Height/ImageDivisor));
                         // drawingContext.DrawImage()  
-                        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                        // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
                         //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
                         //}
                     }
@@ -337,7 +335,7 @@ namespace DXGI_DesktopDuplication
                     //BGImage.Height = bitmap.Height;
                     //this.Dispatcher.Invoke(() => BGImage.Source = buffer);
                     await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
-                    BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
+                    //BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
                 }
 
             }
@@ -415,26 +413,44 @@ namespace DXGI_DesktopDuplication
             }
         }
 
-        private void BGImage_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void BGImage_IO(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
 
             BGImage.MouseMove += BGImage_MouseMove;
-
-            ScrollView.Width = 900;
-            ScrollView.Height = 600;
-
+            //ScrollView.Width = 900;
+            //ScrollView.Height = 600;
             InstallKeyboard();
+            
             //Questo bind vale solo mentre si è connessi
             bindHotkeyCommands();
-            GoFullscreen();
+           // GoFullscreen();
+
+        }
+
+
+        private void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
+        {
+            BGImage.MouseLeave += BGImage_MouseLeave;
+            BGImage.MouseMove += BGImage_MouseMove;
+            //ScrollView.Width = 900;
+            //ScrollView.Height = 600;
+            InstallKeyboard();
+            bindHotkeyCommands();
 
         }
 
         private void GoFullscreen()
         {
-            var window = MainWindow.GetWindow(this);
-            if (window.WindowState != System.Windows.WindowState.Maximized)
-                window.WindowState = System.Windows.WindowState.Maximized;
+            ////var window = MainWindow.GetWindow(this);
+            //if (window.WindowState != System.Windows.WindowState.Maximized)
+            //   window.WindowState = System.Windows.WindowState.Maximized;
+
+            //~ make BGImage, GridImage, ScrollView ~//
+            ScrollView.Height = gridkhaki.Height;
+            ScrollView.Width = gridkhaki.Width;
+            
+            //updateBox.Text=("WindowMain w/h ::"+WindowMain.Width.ToString()+"/"+ WindowMain.Height.ToString());
+
 
             //Password.Visibility = Visibility.Collapsed;
             //LabelNovaId.Visibility = Visibility.Collapsed;
@@ -470,6 +486,7 @@ namespace DXGI_DesktopDuplication
         {
             UnistallMouseAndKeyboard();
             unbindHotkeyCommands();
+            MouseKeyboardIO.IsChecked = false;
         }
 
         #region HooksServer
@@ -885,5 +902,16 @@ namespace DXGI_DesktopDuplication
             myRasDialer.DialAsyncCancel();
 
         }
+
+        private void fullscreen_Checked(object sender, RoutedEventArgs e)
+        {
+            GoFullscreen();
+        }
+
+        private void fullscreen_Unchecked(object sender, RoutedEventArgs e)
+        {
+            //back to originial size. 
+        }
+
     }
 }
