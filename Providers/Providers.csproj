@@ -46,6 +46,7 @@
     <Reference Include="Nini">
       <HintPath>..\Packages\Nini.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
@@ -82,6 +83,7 @@
     <Compile Include="DXGI\CommonTypes.cs" />
     <Compile Include="DXGI\DisplayManager.cs" />
     <Compile Include="DXGI\DuplicationManager.cs" />
+    <Compile Include="DXGI\LockBitmap.cs" />
     <Compile Include="Extensions\ByteExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="LiveControl\Client\KeyboardHook.cs" />

@@ -75,13 +75,21 @@ namespace Providers.LiveControl.Client
         }
 
 
+        public async Task ChangeColorDepth(int bpp)
+        {
+            var RequestNewBpp = new RequestChangeColorDepth(bpp);
+            Network.SendMessage(RequestNewBpp);
+           await  Task.Delay(2000);
+            Server.LiveControllerProvider8.bpp = bpp;
+        }
+
         public async Task ChangeScreenShareDynamics(int mtu, int quality)
         {
             var RequestNewScreen = new RequestScreenshotMessage(mtu, quality);
             Network.SendMessage(RequestNewScreen);
-            Task.Delay(2000);
+           await Task.Delay(2000);
             Server.LiveControllerProvider8.mtu = mtu;
-            
+            Server.LiveControllerProvider8.ImageQuality = quality; 
         }
 
         private static float GetKBFromBytes(long bytes)

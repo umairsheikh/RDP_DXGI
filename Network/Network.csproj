@@ -80,6 +80,7 @@
     <Compile Include="Messages\LiveControl\MouseClickMessage.cs" />
     <Compile Include="Messages\LiveControl\MouseMoveMessage.cs" />
     <Compile Include="Messages\LiveControl\MouseScrollMessage.cs" />
+    <Compile Include="Messages\LiveControl\RequestChangeColorDepth.cs" />
     <Compile Include="Messages\LiveControl\RequestScreenshotMessage.cs" />
     <Compile Include="Messages\LiveControl\ResponseBeginScreenshotMessage.cs" />
     <Compile Include="Messages\LiveControl\ResponseEmptyScreenshotMessage.cs" />

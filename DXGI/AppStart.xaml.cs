@@ -427,7 +427,6 @@ namespace DXGI_DesktopDuplication
 
         }
 
-
         private void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
         {
             BGImage.MouseLeave += BGImage_MouseLeave;
@@ -821,9 +820,9 @@ namespace DXGI_DesktopDuplication
             //string newMTU = MTUBox
             try
             {
-                int newMTU = Int32.Parse(MTUBox.Text);
                 int newIQ = Int32.Parse(QualityBox.Text);
-                await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(newMTU, newIQ);
+                await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(250, newIQ);
+                await LiveControlManagerClient.Provider.ChangeColorDepth(Int32.Parse(ColorDepthBox.Text));
             }
             catch (Exception ex)
             {

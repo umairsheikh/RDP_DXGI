@@ -19,7 +19,11 @@ namespace Managers.LiveControl.Client
           
         }
 
-       
+
+        public void RequestColorDepthChanged()
+        {
+            Network.SendMessage(new RequestChangeColorDepth());
+        }
 
         public void RequestScreenshot()
         {

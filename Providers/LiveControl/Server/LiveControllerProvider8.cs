@@ -66,8 +66,9 @@ namespace Providers.LiveControl.Server
         private Stopwatch Timer { get; set; }
         public uint ScreenshotCounter = 0;
         public static int mtu = 250;
-        public static int ImageQuality = 2;
+        public static int ImageQuality = 1;
         private bool CaptureLoop = true;
+        public static int bpp = 8;
 
         public LiveControllerProvider8(NetworkPeer network)
             : base(network)
@@ -126,10 +127,27 @@ namespace Providers.LiveControl.Server
 
         public override void RegisterMessageHandlers()
         {
+            Network.RegisterMessageHandler<RequestChangeColorDepth>(OnRequestColorDepthChanged);
             Network.RegisterMessageHandler<RequestScreenshotMessage>(OnRequestScreenshotMessageReceived2);
             Network.RegisterMessageHandler<MouseKeyboardNotification>(OnResponseMouseKeyboardMessageReceived);
            
 
+        }
+
+        private  async void OnRequestColorDepthChanged(MessageEventArgs<RequestChangeColorDepth> e)
+        {
+            if (e.Message.Bpp!= 0)
+            {
+                bpp = e.Message.Bpp;
+                CaptureLoop = false;
+            }
+
+            mydispatchtoParse = Dispatcher.CurrentDispatcher;
+            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
+            duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady1;
+            CaptureLoop = true;
+            await CaptureFrame();
+            var task = Task.Factory.StartNew(() => MainSendScreenThread());
         }
 
 
@@ -170,8 +188,6 @@ namespace Providers.LiveControl.Server
         //on screen shared initiated old
         private void OnRequestScreenshotMessageReceived(MessageEventArgs<RequestScreenshotMessage> e)
         {
-
-
             while (true)
             {
                 Application.DoEvents();
@@ -179,9 +195,6 @@ namespace Providers.LiveControl.Server
                 try
                 {
                     frame = MirrorDriver.GetLatestFrame();
-
-
-
                 }
                 catch (Exception ex)
                 {

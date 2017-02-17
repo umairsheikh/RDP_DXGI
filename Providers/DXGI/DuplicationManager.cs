@@ -12,6 +12,11 @@ using Rectangle = SharpDX.Rectangle;
 using Resource = SharpDX.DXGI.Resource;
 using ResultCode = SharpDX.DXGI.ResultCode;
 using Model.LiveControl;
+using System.Linq;
+using BitmapConversion;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.Windows;
 
 namespace DXGI_DesktopDuplication
 {
@@ -38,6 +43,12 @@ namespace DXGI_DesktopDuplication
         public int width;
         //private Texture2D acquiredDesktopImage = null;
 
+        ImageCodecInfo myImageCodecInfo;
+        Encoder myEncoder;
+        EncoderParameter myEncoderParameter;
+        EncoderParameters myEncoderParameters;
+
+
         private DuplicationManager()
         {
             Init();
@@ -48,11 +59,9 @@ namespace DXGI_DesktopDuplication
             instance.SetDispatcher(dispatcher);
             return instance;
         }
-
         public delegate void NewFrameReady(Bitmap newBitmap,System.Drawing.Rectangle rectangle);
         public event NewFrameReady onNewFrameReady;
-
-  
+        public int ColorDepth = 8;
         private void Init()
         {
             // # of graphics card adapter
@@ -150,9 +159,6 @@ namespace DXGI_DesktopDuplication
             data.FrameInfo = duplicateFrameInformation;
         }
 
-
-
-    
         public void FireNewFrameEvent(Bitmap newBitmap,System.Drawing.Rectangle rect)
         {
             try
@@ -162,8 +168,6 @@ namespace DXGI_DesktopDuplication
             }
             catch { }
         }
-
-
         public void SetDispatcher(Dispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
@@ -184,6 +188,7 @@ namespace DXGI_DesktopDuplication
             lock (duplicatedOutput)
                 for (int i = 0; !captured; i++)
                 {
+                    bool dirtyCapture = false;  
                     try
                     {
                         Resource screenResource;
@@ -219,29 +224,107 @@ namespace DXGI_DesktopDuplication
 
                                     //exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
                                     System.Drawing.Rectangle rect = new System.Drawing.Rectangle(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width, dirtyRectangle.Height);
+                                    // Size 8bit-16Bit-32Bit
+                                    if (dirtyRectangle.Width < width / 2 && dirtyRectangle.Height < height / 2)
+                                    {
+                                        //Grayscale(clone);  
+                                        //Bitmap compressed = exactrectangle.Clone(new System.Drawing.Rectangle(0, 0, exactrectangle.Width, exactrectangle.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+                                        //FireNewFrameEvent(compressed, rect);
+                                        //dirtyCapture = true;
 
-                                    if (dirtyRectangle.Width <width/2  &&  dirtyRectangle.Height < height/2)
-                                         FireNewFrameEvent(exactrectangle, rect);
-                                    else
-                                        FireNewFrameEvent(Texture2DToBitmap(), new System.Drawing.Rectangle(0, 0, width, height));
+                                        if (ColorDepth == 4)
+                                        {
+                                            Bitmap target = exactrectangle;
+                                            Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+                                            //Grayscale(target);
+                                            FireNewFrameEvent(NewPicture, rect);
 
+                                        }
+                                        else if (ColorDepth == 8)
+                                        {
+                                            Bitmap target = exactrectangle;
+                                            Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                                            //Grayscale(target);
+                                            FireNewFrameEvent(NewPicture, rect);
+                                        }
+                                        else if (ColorDepth == 16)
+                                        {
+                                            Bitmap target = exactrectangle;
+                                            Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+                                            //Grayscale(target);
+                                            FireNewFrameEvent(NewPicture, rect);
+
+                                        }
+                                        else if (ColorDepth == 24)
+                                        {
+                                            Bitmap target = exactrectangle;
+                                            Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                                            //Grayscale(target);
+                                            FireNewFrameEvent(NewPicture, rect);
+                                        }
+                                        else if (ColorDepth == 32)
+                                        {
+                                            Bitmap target = exactrectangle;
+                                            Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                                            //Grayscale(target);
+                                            FireNewFrameEvent(NewPicture, rect);
+
+                                        }
+                                    }
+                                    //else
+                                    //{
+                                    //    Bitmap target = Texture2DToBitmap();
+                                    //    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+                                    //    //Grayscale(target);
+                                    //    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
+                                    //}
                                 }
                             }
                             counter++;
-                            
 
-                            //Update Dispatcher to send event to invoke UI update from here or send that packet 
+                            if (!dirtyCapture)
+                            {
+                                if (ColorDepth == 4)
+                                {
+                                    Bitmap target = Texture2DToBitmap();
+                                    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+                                    //Grayscale(target);
+                                    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
+                                }
+                                else if (ColorDepth == 8)
+                                {
+                                    Bitmap target = Texture2DToBitmap();
+                                    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                                    //Grayscale(target);
+                                    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
+                                }
+                                else if (ColorDepth == 16)
+                                {
+                                    Bitmap target = Texture2DToBitmap();
+                                    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+                                    //Grayscale(target);
+                                    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
 
-                            //if (dispatcher != null)
-                            //    dispatcher.BeginInvoke(MainWindow.RefreshUI,
-                            //        Texture2DToBitmap());
+                                }
+                                else if (ColorDepth == 24)
+                                {
+                                    Bitmap target = Texture2DToBitmap();
+                                    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                                    //Grayscale(target);
+                                    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
 
-
+                                }
+                                else if (ColorDepth == 32)
+                                {
+                                    Bitmap target = Texture2DToBitmap();
+                                    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                                    //Grayscale(target);
+                                    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
+                                }
+                            }
+                            dirtyCapture = false;
                             captured = true;
-                            
-
                         }
-
                         duplicatedOutput.ReleaseFrame();
                     }
                     catch (SharpDXException e)
@@ -251,7 +334,49 @@ namespace DXGI_DesktopDuplication
                     }
                 }
         }
+        private static void Grayscale(Bitmap source)
+        {
+            using (var bmp = new LockBitmap(source))
+            {
+                for (var y = 0; y < bmp.Height; y++)
+                {
+                    for (var x = 0; x < bmp.Width; x++)
+                    {
+                        var color = bmp.GetPixel(x, y);
+                        var minComponent = (color.R + color.G + color.B) / 3;
 
+                        if (minComponent > 255)
+                        {
+                            minComponent = 255;
+                        }
+
+                        var newColor = System.Drawing.Color.FromArgb(color.A, minComponent, minComponent, minComponent);
+                        bmp.SetPixel(x, y, newColor);
+                    }
+                }
+            }
+        }
+        private Bitmap ChangePixelFormat(Bitmap inputImage, System.Drawing.Imaging.PixelFormat newFormat)
+        {
+            Bitmap bmp = new Bitmap(inputImage.Width, inputImage.Height, newFormat);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.DrawImage(inputImage, 0, 0);
+            }
+            return bmp;
+        }
+        private static ImageCodecInfo GetEncoderInfo(String mimeType)
+        {
+            int j;
+            ImageCodecInfo[] encoders;
+            encoders = ImageCodecInfo.GetImageEncoders();
+            for (j = 0; j < encoders.Length; ++j)
+            {
+                if (encoders[j].MimeType == mimeType)
+                    return encoders[j];
+            }
+            return null;
+        }
         public void GetFrame(out FrameData data)
         {
             data = new FrameData();
@@ -305,7 +430,7 @@ namespace DXGI_DesktopDuplication
         public Bitmap Texture2DToBitmap()
         {
 
-            return ExtractRect(0, 0, width, height);
+            //return ExtractRect(0, 0, width, height);
 
             // Get the desktop capture screenTexture
             DataBox mapSource = device.ImmediateContext.MapSubresource(screenTexture, 0, MapMode.Read,
@@ -313,7 +438,7 @@ namespace DXGI_DesktopDuplication
 
             //// Create Drawing.Bitmap
 
-            var bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb); //不能是ARGB
+            var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppRgb); //不能是ARGB
             var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
 
             //// Copy pixels from screen capture Texture to GDI bitmap
@@ -336,7 +461,6 @@ namespace DXGI_DesktopDuplication
 
             return bitmap;
         }
-
         //TODO copy bitmap of the designated area
         public Bitmap ExtractRect(int originX, int originY, int width, int height)
         {
@@ -345,8 +469,7 @@ namespace DXGI_DesktopDuplication
                 MapFlags.None);
 
             // Create Drawing.Bitmap
-
-            var bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb); //不能是ARGB
+            var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppRgb); //不能是ARGB
             var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
 
             // Copy pixels from screen capture Texture to GDI bitmap
@@ -358,7 +481,6 @@ namespace DXGI_DesktopDuplication
             for (int y = 0; y < height; y++)
             {
                 // Copy a single line 
-                
                 Utilities.CopyMemory(destPtr, sourcePtr, width*4);
 
                 // Advance pointers

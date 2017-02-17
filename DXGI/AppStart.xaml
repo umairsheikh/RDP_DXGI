@@ -35,10 +35,10 @@
             <Button x:Name="startCapture" Content="HOST" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" Click="startCapture_Click" Margin="135,7,0,0"/>
             <Label Foreground="White" x:Name="remoteConnection" Content="Status" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="12,0,0,0"/>
             <Label Foreground="White" x:Name="UpdateQuality" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="332,4,0,0"/>
-            <Label Foreground="White" x:Name="MTULabel" Content="MTU:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="334,30,0,0"/>
+            <Label Foreground="White" x:Name="ColorBpp" Content="ColorDepth:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="326,30,0,0"/>
             <Label Foreground="White" x:Name="QualityLabel" Content="Quality:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="332,45,0,0"/>
             <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="True" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Margin="399,54,0,0"/>
-            <TextBox x:Name="MTUBox" HorizontalAlignment="Left" Height="17"  IsEnabled="False"  TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
+            <TextBox x:Name="ColorDepthBox" HorizontalAlignment="Left" Height="17"  IsEnabled="True"  TextWrapping="Wrap" Text="8" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
             <Button x:Name="UpdateQualityBtn" IsEnabled="true" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="UpdateQualityBtn_Click"  Margin="422,7,0,0"/>
             <CheckBox x:Name="fullscreen" Content="Maximize" HorizontalAlignment="Left" Margin="577,0,0,50" VerticalAlignment="Bottom" Width="72" Height="21" IsEnabled="True" Foreground="#FF23CDAE" Checked="fullscreen_Checked"  Unchecked="fullscreen_Unchecked" />
             <CheckBox x:Name="checkBox" Content="VPN" HorizontalAlignment="Left" Margin="533,9,0,0" VerticalAlignment="Top" Width="43" Height="19" IsEnabled="True" Foreground="#FFFF4141" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked" />
@@ -46,11 +46,12 @@
             <TextBox x:Name="vpnpwdbox" HorizontalAlignment="Left" Height="18" Margin="592,55,0,0" TextWrapping="Wrap" Text="Casper123" VerticalAlignment="Top" Width="120"/>
             <Label x:Name="vpnusr" Content="User-VPN" HorizontalAlignment="Left" Margin="528,32,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1"/>
             <Label x:Name="vpnpwd" Content="Pwd-VPN" HorizontalAlignment="Left" Margin="528,53,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1" />
-            <TextBox x:Name="updateBox" HorizontalAlignment="Left" Height="73" Margin="717,3,0,0" TextWrapping="Wrap" Text="Updates..." VerticalAlignment="Top" Width="165"/>
             <CheckBox x:Name="MouseKeyboardIO" Content="Mouse/Key" HorizontalAlignment="Left" Margin="644,10,0,0" VerticalAlignment="Top" Checked="MouseKeyboardIO_Checked" Foreground="#FF80EA28"/>
-
+            <!--<CheckBox x:Name="bpp4Checkbox" Content="4 BPP" HorizontalAlignment="Left" Margin="740,12,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
+            <CheckBox x:Name="bpp8Checkbox" Content="8 BPP" HorizontalAlignment="Left" Margin="741,35,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
+            <CheckBox x:Name="bpp16Checkbox" Content="16 BPP" HorizontalAlignment="Left" Margin="741,60,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
+            <CheckBox x:Name="bpp24Checkbox" Content="24 BPP" HorizontalAlignment="Left" Margin="809,14,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
+            <CheckBox x:Name="bpp32Checkbox" Content="32 BPP" HorizontalAlignment="Left" Margin="809,40,0,0" VerticalAlignment="Top" Foreground="Aqua"/>-->
         </Grid>
-
     </Grid>
-  
 </Page>
