@@ -346,7 +346,6 @@ namespace DXGI_DesktopDuplication
             }
         }
 
-
         private WriteableBitmap mergetwoBitmaps(WriteableBitmap bitmap1, WriteableBitmap bitmap2, Int32Rect rect, int stride)
         {
             //bitmap1 = new WriteableBitmap(new BitmapImage(new Uri("Koala.jpg", UriKind.Relative)));

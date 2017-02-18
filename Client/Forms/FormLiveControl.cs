@@ -27,16 +27,16 @@ namespace Client.Forms
         //private Pen pen = new Pen(Color.Magenta, 2.0f);
 
         public LiveControlManager LiveControlManager { get { return NovaClient.Instance.LiveControlManager; } }
-     
+
         //Client Screen share 
         private int ImageDivisor = 1;
         private int mtu = 1;
         private int hostScreenWidth;
         private int hostScreenHeight;
 
-        RamGecTools.MouseHook mouseHook = new RamGecTools.MouseHook();
+        //RamGecTools.MouseHook mouseHook = new RamGecTools.MouseHook();
         RamGecTools.KeyboardHook keyboardHook = new RamGecTools.KeyboardHook();
-       
+
 
         public FormLiveControl()
         {
@@ -47,23 +47,28 @@ namespace Client.Forms
 
         void LiveControlManager_OnScreenshotReceived(object sender, Providers.LiveControl.Client.ScreenshotMessageEventArgs e)
         {
-            var screenshot = e.Screenshot;
+            if (hostScreenHeight == 0 && hostScreenHeight == 0)
+            {
+                hostScreenWidth = (int)e.Screenshot.ScreenWidth;
+                hostScreenHeight = (int)e.Screenshot.ScreenHeight;
+                gdiScreen1.Width = hostScreenWidth;
+                gdiScreen1.Height = hostScreenHeight;
 
+                ImageDivisor = LiveControlManager.Provider.GetImageQualityDiv();
+                mtu = LiveControlManager.Provider.GetMTU();
+                TurnOnGDIKeyboardScreenHooks();
+
+            }
+            var screenshot = e.Screenshot;
             using (var stream = new MemoryStream(screenshot.Image))
             {
+                //if ((int)screenshot. == hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
+                //{
 
+                //}
                 System.Drawing.Image image = Image.FromStream(stream);
                 //Application.DoEvents();
                 //this.BackgroundImage = image;
-                //if (ShowRegionOutlines)
-                //{
-                //    var gfx = gdiScreen1.CreateGraphics();
-                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y));
-                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X + e.Screenshot.Region.Width, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y));
-                //    gfx.DrawLine(pen, new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y + e.Screenshot.Region.Y), new Point(e.Screenshot.Region.X, e.Screenshot.Region.Y));
-                //    gfx.Dispose();
-                //}
                 gdiScreen1.Draw(image, screenshot.Region);
             }
 
@@ -87,14 +92,62 @@ namespace Client.Forms
             return total;
         }
 
-        private void ButtonRequestScreenshot_Click(object sender, EventArgs e)
+        private async void ButtonRequestScreenshot_Click(object sender, EventArgs e)
         {
             ButtonRequestScreenshot.Hide();
             LiveControlManager.RequestScreenshot();
+            //add Gdiscreen Mouse and Keyboard hooks
+            //TurnOnGDIScreenHooks();
+            
+
         }
 
-        
-        #region HooksClient
+        private void TurnOnGDIKeyboardScreenHooks()
+        {
+
+            gdiScreen1.MouseClick += GdiScreen1_MouseClick;
+            gdiScreen1.MouseMove += GdiScreen1_MouseMove;
+            gdiScreen1.MouseLeave += GdiScreen1_MouseLeave;
+            InstallKeyboard();
+
+        }
+
+        private void GdiScreen1_MouseLeave(object sender, EventArgs e)
+        {
+            TurnOffGDIScreenHooks();
+        }
+
+        private void GdiScreen1_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void GdiScreen1_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            double Xabs = e.Location.X;
+            double Yabs = e.Location.Y;
+            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 4);
+
+            //double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            //double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
+
+            //this.serverManger.sendMessage
+            LiveControlManager.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
+            Console.WriteLine("M" + " " + x + " " + y);
+        }
+
+        private void TurnOffGDIScreenHooks()
+        {
+            UnistallMouseAndKeyboard();
+            gdiScreen1.MouseClick += GdiScreen1_MouseClick;
+            gdiScreen1.MouseMove += GdiScreen1_MouseMove;
+
+        }
+
+
+
+        #region HooksNurFurTastatuClient
         //TODO: passare un'oggetto al server in modo che questo possa eseguire azione
         void keyboardHook_KeyPress(int op, RamGecTools.KeyboardHook.VKeys key)
         {
@@ -124,9 +177,10 @@ namespace Client.Forms
             }
         }
 
+        //
         /*
-         Questo metodo è stato creato per il seguente motivo: il keyboard hooker fa in modo che gli hotkeys tipo alt-tab, non vadano al sistema operativo 
-         * del client: in pratica è come se l'hooker si "mangiasse" gli eventi key_down, di conseguenza bisogna
+        Questo metodo è stato creato per il seguente motivo: il keyboard hooker fa in modo che gli hotkeys tipo alt-tab, non vadano al sistema operativo
+        * del client: in pratica è come se l'hooker si "mangiasse" gli eventi key_down, di conseguenza bisogna
          * generarli "artificialmente" in questo modo, per far sì che il server li riceva
          */
         void keyboardHook_HotKeyPress(int virtualKeyCode)
@@ -142,6 +196,7 @@ namespace Client.Forms
             switch (type)
             {
                 case 0:  //mouse click
+                    
                     LiveControlManager.Provider.sendMouseKeyboardStateMessage("C" + " " + move.ToString());
                     Console.Write("C" + " " + move.ToString());
 
@@ -149,19 +204,19 @@ namespace Client.Forms
                 case 1: // Mouse movement
 
                     //point2Screen
-                    System.Windows.Point PointOnImage = BGImage.PointFromScreen((new System.Windows.Point(mouse.pt.x, mouse.pt.y)));
 
-                    double x = Math.Round((PointOnImage.X / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION
-                    double y = Math.Round((PointOnImage.Y / hostScreenHeight), 4);
-                    //this.serverManger.sendMessage
-                    LiveControlManager.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
-                    Console.WriteLine("M" + " " + x + " " + y);
+                    //System.Windows.Point PointOnImage = BGImage.PointFromScreen((new System.Windows.Point(mouse.pt.x, mouse.pt.y)));
+
+                    //double x = Math.Round((PointOnImage.X / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION
+                    //double y = Math.Round((PointOnImage.Y / hostScreenHeight), 4);
+                    ////this.serverManger.sendMessage
+                    //LiveControlManager.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
+                    //Console.WriteLine("M" + " " + x + " " + y);
                     break;
                 default:
                     break;
             }
         }
-
         private void MouseWheelEventHandler(object sender, MouseWheelEventArgs e)
         {
             LiveControlManager.Provider.sendMouseKeyboardStateMessage("W" + " " + ((int)e.Delta / 120).ToString());
@@ -176,7 +231,7 @@ namespace Client.Forms
             keyboardHook.HotKeyPress += new RamGecTools.KeyboardHook.myKeyboardHotkeyCallback(keyboardHook_HotKeyPress);
             keyboardHook.Install();
             //Installo Mouse
-            mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
+            //mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
             //mouseHook.Install();
             //this.MouseWheel += MouseWheelEventHandler;
         }
