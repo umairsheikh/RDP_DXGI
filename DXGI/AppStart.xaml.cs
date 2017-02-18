@@ -319,7 +319,7 @@ namespace DXGI_DesktopDuplication
                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                     {
 
-                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
                         drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X/ImageDivisor, screenshot.Region.Y/ImageDivisor, screenshot.Region.Width/ImageDivisor, screenshot.Region.Height/ImageDivisor));
                         // drawingContext.DrawImage()  
                         // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,

@@ -140,6 +140,7 @@ namespace Providers.LiveControl.Server
             {
                 bpp = e.Message.Bpp;
                 CaptureLoop = false;
+                duplicationManager.ColorDepth = bpp;
             }
 
             mydispatchtoParse = Dispatcher.CurrentDispatcher;

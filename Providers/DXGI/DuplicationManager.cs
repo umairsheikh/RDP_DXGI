@@ -61,8 +61,8 @@ namespace DXGI_DesktopDuplication
         }
         public delegate void NewFrameReady(Bitmap newBitmap,System.Drawing.Rectangle rectangle);
         public event NewFrameReady onNewFrameReady;
-        public int ColorDepth = 8;
-        private void Init()
+        public int ColorDepth  { get; set; }
+          private void Init()
         {
             // # of graphics card adapter
             const int numAdapter = 0;
@@ -106,6 +106,7 @@ namespace DXGI_DesktopDuplication
             duplicatedOutput = output1.DuplicateOutput(device);
 
             screenTexture = new Texture2D(device, textureDesc);
+            ColorDepth = 8;
         }
 
         public OutputDescription GetOutputDescription()
@@ -225,12 +226,12 @@ namespace DXGI_DesktopDuplication
                                     //exactrectangle.Save("dirty" + (counter) + "-" + (subCounter++) + ".jpg");
                                     System.Drawing.Rectangle rect = new System.Drawing.Rectangle(dirtyRectangle.X, dirtyRectangle.Y, dirtyRectangle.Width, dirtyRectangle.Height);
                                     // Size 8bit-16Bit-32Bit
-                                    if (dirtyRectangle.Width < width / 2 && dirtyRectangle.Height < height / 2)
+                                    if (dirtyRectangle.Width < width  && dirtyRectangle.Height < height )
                                     {
                                         //Grayscale(clone);  
                                         //Bitmap compressed = exactrectangle.Clone(new System.Drawing.Rectangle(0, 0, exactrectangle.Width, exactrectangle.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
                                         //FireNewFrameEvent(compressed, rect);
-                                        //dirtyCapture = true;
+                                        dirtyCapture = true;
 
                                         if (ColorDepth == 4)
                                         {
@@ -280,9 +281,7 @@ namespace DXGI_DesktopDuplication
                                     //}
                                 }
                             }
-                            counter++;
-
-                            if (!dirtyCapture)
+                            else 
                             {
                                 if (ColorDepth == 4)
                                 {
@@ -322,6 +321,7 @@ namespace DXGI_DesktopDuplication
                                     FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
                                 }
                             }
+                            counter++;
                             dirtyCapture = false;
                             captured = true;
                         }
