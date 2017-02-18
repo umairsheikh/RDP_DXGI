@@ -278,65 +278,70 @@ namespace DXGI_DesktopDuplication
                 bitmap.StreamSource = memoryStream;
                 bitmap.EndInit();
 
+                using (Graphics g = Graphics.FromImage(image))
+                {
+                    g.DrawImage(image, new PointF(screenshot.Region.X, screenshot.Region.Y));
+                }  
+                
                 //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
                 //Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
 
-                if ((int)bitmap.Height== hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
-                {
-                    BGImage.Width = hostScreenWidth;
-                    BGImage.Height = hostScreenHeight;
-                    BGWritable = new WriteableBitmap((BitmapSource)bitmap);
-                    buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
+                //if ((int)bitmap.Height== hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
+                //{
+                //    BGImage.Width = hostScreenWidth;
+                //    BGImage.Height = hostScreenHeight;
+                //    BGWritable = new WriteableBitmap((BitmapSource)bitmap);
+                //    buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
                 
-                    var drawingVisual = new DrawingVisual();
-                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                    {
+                //    var drawingVisual = new DrawingVisual();
+                //     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                //    {
 
-                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
-                        // drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
-                        // drawingContext.DrawImage()  
-                        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
-                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
-                        //}
-                    }
-                    buffer.Render(drawingVisual);
-                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                //        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                //        // drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
+                //        // drawingContext.DrawImage()  
+                //        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                //        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                //        //}
+                //    }
+                //    buffer.Render(drawingVisual);
+                //    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
 
-                }
-                else
-                {
-                    int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
-                    //int size = stride * bitmap.PixelHeight;
-                    //byte[] bitmapByteArray = new byte[size];
-                    //bitmap.CopyPixels(bitmapByteArray, 0, 0);
-                    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width/ImageDivisor, (Int32)bitmap.Height/ImageDivisor);
-                    ////BGWritable.AddDirtyRect(dirtyRectangle);
-                    //BGWritable.Lock();
-                    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
-                    //BGWritable.Unlock();
-                    //buffer =new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX,BGWritable.DpiY, PixelFormats.Pbgra32);
-                    var drawingVisual = new DrawingVisual();
-                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                    {
+                //}
+                //else
+                //{
+                //    int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
+                //    //int size = stride * bitmap.PixelHeight;
+                //    //byte[] bitmapByteArray = new byte[size];
+                //    //bitmap.CopyPixels(bitmapByteArray, 0, 0);
+                //    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width/ImageDivisor, (Int32)bitmap.Height/ImageDivisor);
+                //    ////BGWritable.AddDirtyRect(dirtyRectangle);
+                //    //BGWritable.Lock();
+                //    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
+                //    //BGWritable.Unlock();
+                //    //buffer =new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX,BGWritable.DpiY, PixelFormats.Pbgra32);
+                //    var drawingVisual = new DrawingVisual();
+                //    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                //    {
 
-                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
-                        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X/ImageDivisor, screenshot.Region.Y/ImageDivisor, screenshot.Region.Width/ImageDivisor, screenshot.Region.Height/ImageDivisor));
-                        // drawingContext.DrawImage()  
-                        // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
-                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
-                        //}
-                    }
-                    buffer.Render(drawingVisual);
-                    //var img = new DrawingImage(drawingVisual.Drawing);
+                //        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                //        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X/ImageDivisor, screenshot.Region.Y/ImageDivisor, screenshot.Region.Width/ImageDivisor, screenshot.Region.Height/ImageDivisor));
+                //        // drawingContext.DrawImage()  
+                //        // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                //        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                //        //}
+                //    }
+                //    buffer.Render(drawingVisual);
+                //    //var img = new DrawingImage(drawingVisual.Drawing);
 
-                    // var mergedBitmap = mergetwoBitmaps(BGWritable,new WriteableBitmap(bitmap), dirtyRectangle,stride);
+                //    // var mergedBitmap = mergetwoBitmaps(BGWritable,new WriteableBitmap(bitmap), dirtyRectangle,stride);
 
-                    //BGImage.Width = bitmap.Width;
-                    //BGImage.Height = bitmap.Height;
-                    //this.Dispatcher.Invoke(() => BGImage.Source = buffer);
-                    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
-                    //BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
-                }
+                //    //BGImage.Width = bitmap.Width;
+                //    //BGImage.Height = bitmap.Height;
+                //    //this.Dispatcher.Invoke(() => BGImage.Source = buffer);
+                //    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                //    //BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
+                //}
 
             }
         }

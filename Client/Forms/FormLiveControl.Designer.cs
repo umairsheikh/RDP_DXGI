@@ -42,7 +42,7 @@
             this.ButtonRequestScreenshot.Name = "ButtonRequestScreenshot";
             this.ButtonRequestScreenshot.Size = new System.Drawing.Size(212, 40);
             this.ButtonRequestScreenshot.TabIndex = 3;
-            this.ButtonRequestScreenshot.Text = "Click to Begin";
+            this.ButtonRequestScreenshot.Text = "Start Streaming";
             this.ButtonRequestScreenshot.UseVisualStyleBackColor = false;
             this.ButtonRequestScreenshot.Click += new System.EventHandler(this.ButtonRequestScreenshot_Click);
             // 
@@ -52,7 +52,7 @@
             this.gdiScreen1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gdiScreen1.Location = new System.Drawing.Point(0, 0);
             this.gdiScreen1.Name = "gdiScreen1";
-            this.gdiScreen1.Size = new System.Drawing.Size(1264, 768);
+            this.gdiScreen1.Size = new System.Drawing.Size(1264, 751);
             this.gdiScreen1.TabIndex = 2;
             this.gdiScreen1.Text = "gdiScreen1";
             // 
@@ -60,7 +60,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1264, 768);
+            this.ClientSize = new System.Drawing.Size(1264, 751);
             this.Controls.Add(this.ButtonRequestScreenshot);
             this.Controls.Add(this.gdiScreen1);
             this.DoubleBuffered = true;

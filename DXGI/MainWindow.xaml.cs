@@ -52,6 +52,8 @@ namespace DXGI_DesktopDuplication
 
         private int hostScreenWidth;
         private int hostScreenHeight;
+        
+        
         //Hook Servers
         private InputSimulator inputSimulator;
         private BitmapImage BGBitmap;

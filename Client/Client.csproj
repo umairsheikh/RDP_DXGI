@@ -48,12 +48,39 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotRas, Version=1.3.5166.33433, Culture=neutral, PublicKeyToken=b378f04384b7892a, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotRas.for.Win2K8.1.3.0\lib\net40\DotRas.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CompilerServices.AsyncTargetingPack.Net45, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CompilerServices.AsyncTargetingPack.1.0.1\lib\net45\Microsoft.CompilerServices.AsyncTargetingPack.Net45.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Nini">
       <HintPath>..\Packages\Nini.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="SharpDX">
+      <HintPath>..\Packages\SharpDX.2.6.3\Bin\DirectX11-net20\SharpDX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>..\Packages\SharpDX.2.6.3\Bin\DirectX11-net20\SharpDX.D3DCompiler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Packages\SharpDX.2.6.3\Bin\DirectX11-net20\SharpDX.Direct3D11.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.DirectInput">
+      <HintPath>..\Packages\SharpDX.2.6.3\Bin\DirectX11-net20\SharpDX.DirectInput.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.DXGI, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Packages\SharpDX.2.6.3\Bin\DirectX11-net20\SharpDX.DXGI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,6 +91,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Forms\FormConnect.cs">
@@ -78,6 +107,12 @@
     <Compile Include="Forms\FormLiveControl.Designer.cs">
       <DependentUpon>FormLiveControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="HookerClient\AmbrUtils.cs" />
+    <Compile Include="HookerClient\KeyboardHook.cs" />
+    <Compile Include="HookerClient\KeyboardMessage.cs" />
+    <Compile Include="HookerClient\MouseHook.cs" />
+    <Compile Include="HookerClient\ServerEntity.cs" />
+    <Compile Include="HookerClient\Win32.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -114,6 +149,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="HookerServer\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
