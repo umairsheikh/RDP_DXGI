@@ -90,7 +90,70 @@ namespace DXGI_DesktopDuplication
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         }
-        
+
+
+        #region ServeSettings
+        public async Task InitNetworkManagerServer()
+        {
+
+            NovaManagerServer = Managers.NovaServer.Instance.NovaManager;
+            LiveControlManagerServer = Managers.NovaServer.Instance.LiveControlManager;
+            inputSimulator = new InputSimulator();
+            NovaManagerServer.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
+            NovaManagerServer.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
+            NovaManagerServer.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
+
+            PasswordGeneratedEventArgs passArgs = await NovaManagerServer.GeneratePassword();
+            //LabelPassword.Content = passArgs.NewPassword;
+            IntroducerRegistrationResponsedEventArgs regArgs = await NovaManagerServer.RegisterWithIntroducerAsTask();
+            //LabelNovaId.Content = regArgs.NovaId;
+            Status.Content = "Ready to Connect";
+        }
+
+        // Network handshakes for HOST
+        void Network_OnConnected(object sender, Network.ConnectedEventArgs e)
+        {
+            Status.Content = "Connected";
+
+        }
+        void ServerManager_OnNewPasswordGenerated(object sender, Providers.Nova.Modules.PasswordGeneratedEventArgs e)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                LabelPassword.Content = e.NewPassword;
+            }));
+
+        }
+        private void NovaManager_OnIntroducerRegistrationResponded(object sender, Providers.Nova.Modules.IntroducerRegistrationResponsedEventArgs e)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                LabelNovaId.Content = e.NovaId;
+            }));
+
+        }
+        private async void startCapture_Click(object sender, RoutedEventArgs e)
+        {
+            //Start Server Network Registration
+            await InitNetworkManagerServer();
+            LiveControlManagerServer.OnMouseKeyboardEventReceived += LiveControlManagerServer_OnMouseKeyboardEventReceived;
+
+
+        }
+        void LiveControlManagerServer_OnMouseKeyboardEventReceived(object sender, Network.Messages.LiveControl.MouseKeyboardNotification e)
+        {
+            string msgRecvd = e.data;
+            parseMessage(msgRecvd);
+        }
+
+   
+
+
+
+        #endregion
+
+        #region clientManagement
+
         public async Task InitNetworkManagerClient()
         {
             NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
@@ -109,23 +172,7 @@ namespace DXGI_DesktopDuplication
 
         }
 
-        public async Task InitNetworkManagerServer()
-        {
-
-            NovaManagerServer = Managers.NovaServer.Instance.NovaManager;
-            LiveControlManagerServer = Managers.NovaServer.Instance.LiveControlManager;
-            inputSimulator = new InputSimulator();
-            NovaManagerServer.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
-            NovaManagerServer.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
-            NovaManagerServer.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
-
-            PasswordGeneratedEventArgs passArgs = await NovaManagerServer.GeneratePassword();
-            //LabelPassword.Content = passArgs.NewPassword;
-            IntroducerRegistrationResponsedEventArgs regArgs = await NovaManagerServer.RegisterWithIntroducerAsTask();
-            //LabelNovaId.Content = regArgs.NovaId;
-            Status.Content = "Ready to Connect";
-        }
-
+       
         void ClientManager_OnConnected(object sender, ConnectedEventArgs e)
         {
             //  ButtonConnect.Set(() => ButtonConnect.Text, "Connected.");
@@ -174,46 +221,7 @@ namespace DXGI_DesktopDuplication
                 BitmapSizeOptions.FromEmptyOptions());
             //DeleteObject(pointer);
         }
-        // Network handshakes for HOST
-        void Network_OnConnected(object sender, Network.ConnectedEventArgs e)
-        {
-            Status.Content = "Connected";
-
-        }
-
-        void ServerManager_OnNewPasswordGenerated(object sender, Providers.Nova.Modules.PasswordGeneratedEventArgs e)
-        {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                LabelPassword.Content = e.NewPassword;
-            }));
-
-        }
-
-        private void NovaManager_OnIntroducerRegistrationResponded(object sender, Providers.Nova.Modules.IntroducerRegistrationResponsedEventArgs e)
-        {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                LabelNovaId.Content = e.NovaId;
-            }));
-
-        }
-
-        private async void startCapture_Click(object sender, RoutedEventArgs e)
-        {
-            //Start Server Network Registration
-            await InitNetworkManagerServer();
-            LiveControlManagerServer.OnMouseKeyboardEventReceived += LiveControlManagerServer_OnMouseKeyboardEventReceived;
-
-
-        }
-
-        void LiveControlManagerServer_OnMouseKeyboardEventReceived(object sender, Network.Messages.LiveControl.MouseKeyboardNotification e)
-        {
-            string msgRecvd = e.data;
-            parseMessage(msgRecvd);
-        }
-
+     
         // Network handshakes for CLIENT
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
@@ -281,67 +289,70 @@ namespace DXGI_DesktopDuplication
                 using (Graphics g = Graphics.FromImage(image))
                 {
                     g.DrawImage(image, new PointF(screenshot.Region.X, screenshot.Region.Y));
-                }  
-                
+                }
+
                 //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
                 //Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
 
-                //if ((int)bitmap.Height== hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
-                //{
-                //    BGImage.Width = hostScreenWidth;
-                //    BGImage.Height = hostScreenHeight;
-                //    BGWritable = new WriteableBitmap((BitmapSource)bitmap);
-                //    buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
-                
-                //    var drawingVisual = new DrawingVisual();
-                //     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                //    {
+                if ((int)bitmap.Height == hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
+                {
+                    BGImage.Width = hostScreenWidth;
+                    BGImage.Height = hostScreenHeight;
+                    BGWritable = new WriteableBitmap((BitmapSource)bitmap);
+                    buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
 
-                //        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
-                //        // drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
-                //        // drawingContext.DrawImage()  
-                //        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
-                //        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
-                //        //}
-                //    }
-                //    buffer.Render(drawingVisual);
-                //    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                    var drawingVisual = new DrawingVisual();
+                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                    {
 
-                //}
-                //else
-                //{
-                //    int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
-                //    //int size = stride * bitmap.PixelHeight;
-                //    //byte[] bitmapByteArray = new byte[size];
-                //    //bitmap.CopyPixels(bitmapByteArray, 0, 0);
-                //    var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width/ImageDivisor, (Int32)bitmap.Height/ImageDivisor);
-                //    ////BGWritable.AddDirtyRect(dirtyRectangle);
-                //    //BGWritable.Lock();
-                //    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
-                //    //BGWritable.Unlock();
-                //    //buffer =new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX,BGWritable.DpiY, PixelFormats.Pbgra32);
-                //    var drawingVisual = new DrawingVisual();
-                //    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                //    {
+                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                        // drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X, screenshot.Region.Y, screenshot.Region.Width, screenshot.Region.Height));
+                        // drawingContext.DrawImage()  
+                        //    drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                        //}
+                    }
+                    buffer.Render(drawingVisual);
+                    //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                    BGImage.Source = buffer;
 
-                //        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
-                //        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X/ImageDivisor, screenshot.Region.Y/ImageDivisor, screenshot.Region.Width/ImageDivisor, screenshot.Region.Height/ImageDivisor));
-                //        // drawingContext.DrawImage()  
-                //        // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
-                //        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
-                //        //}
-                //    }
-                //    buffer.Render(drawingVisual);
-                //    //var img = new DrawingImage(drawingVisual.Drawing);
 
-                //    // var mergedBitmap = mergetwoBitmaps(BGWritable,new WriteableBitmap(bitmap), dirtyRectangle,stride);
+                }
+                else
+                {
+                    //int stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel + 7) / 8;
+                    //int size = stride * bitmap.PixelHeight;
+                    //byte[] bitmapByteArray = new byte[size];
+                    //bitmap.CopyPixels(bitmapByteArray, 0, 0);
+                    //var dirtyRectangle = new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width / ImageDivisor, (Int32)bitmap.Height / ImageDivisor);
+                    ////BGWritable.AddDirtyRect(dirtyRectangle);
+                    //BGWritable.Lock();
+                    //BGWritable.WritePixels(new Int32Rect(screenshot.Region.X, screenshot.Region.Y, (Int32)bitmap.Width, (Int32)bitmap.Height),bitmapByteArray, stride, screenshot.Region.X, screenshot.Region.Y);
+                    //BGWritable.Unlock();
+                    //buffer =new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX,BGWritable.DpiY, PixelFormats.Pbgra32);
+                    var drawingVisual = new DrawingVisual();
+                    using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                    {
 
-                //    //BGImage.Width = bitmap.Width;
-                //    //BGImage.Height = bitmap.Height;
-                //    //this.Dispatcher.Invoke(() => BGImage.Source = buffer);
-                //    await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
-                //    //BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
-                //}
+                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                        drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X / ImageDivisor, screenshot.Region.Y / ImageDivisor, screenshot.Region.Width / ImageDivisor, screenshot.Region.Height / ImageDivisor));
+                        // drawingContext.DrawImage()  
+                        // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
+                        //                      new Rect(screenshot.Region.X,screenshot.Region.Y,screenshot.Region.Width,screenshot.Region.Height));
+                        //}
+                    }
+                    buffer.Render(drawingVisual);
+                    //var img = new DrawingImage(drawingVisual.Drawing);
+
+                    // var mergedBitmap = mergetwoBitmaps(BGWritable,new WriteableBitmap(bitmap), dirtyRectangle,stride);
+
+                    //BGImage.Width = bitmap.Width;
+                    //BGImage.Height = bitmap.Height;
+                    //this.Dispatcher.Invoke(() => BGImage.Source = buffer);
+                    BGImage.Source = buffer;
+                    //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));
+                    //BGWritable = new WriteableBitmap((BitmapSource)BGImage.Source);
+                }
 
             }
         }
@@ -434,11 +445,10 @@ namespace DXGI_DesktopDuplication
         private void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
         {
             BGImage.MouseLeave += BGImage_MouseLeave;
-            //BGImage.MouseMove += BGImage_MouseMove;
-            //BGImage.MouseDown += BGImage_MouseDown;
-            //BGImage.MouseUp += BGImage_MouseUp;
-            //ScrollView.Width = 900;
-            //ScrollView.Height = 600;
+            BGImage.MouseMove += BGImage_MouseMove;
+            BGImage.MouseDown += BGImage_MouseDown;
+            BGImage.MouseUp += BGImage_MouseUp;
+            
             InstallKeyboard();
             bindHotkeyCommands();
 
@@ -493,6 +503,88 @@ namespace DXGI_DesktopDuplication
             unbindHotkeyCommands();
             MouseKeyboardIO.IsChecked = false;
         }
+
+ 
+
+        private async void UpdateQualityBtn_Click(object sender, RoutedEventArgs e)
+        {
+            //string newMTU = MTUBox
+            try
+            {
+                int newIQ = Int32.Parse(QualityBox.Text);
+                await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(250, newIQ);
+                await LiveControlManagerClient.Provider.ChangeColorDepth(Int32.Parse(ColorDepthBox.Text));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                myRasPhonebook = new RasPhoneBook();
+                myRasPhonebook.Open();
+                RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
+                if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
+                    this.myRasPhonebook.Entries.Add(entry);
+
+                myRasDialer = new RasDialer();
+                myRasDialer.StateChanged += myRasDialer_StateChanged;
+                myRasDialer.EntryName = "VPN_DXGI";
+                myRasDialer.PhoneBookPath = null;
+                myRasDialer.Credentials = new System.Net.NetworkCredential(vpnuserbox.Text, vpnpwdbox.Text);
+                myRasDialer.PhoneBookPath = myRasPhonebook.Path;
+                var phonbookpath = myRasDialer.PhoneBookPath;
+                if (phonbookpath != null)
+                {
+                    //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
+                    Debug.WriteLine("Path to phonebook for VPN Entry:: " + phonbookpath);
+                    INIFile inif = new INIFile(phonbookpath);
+                    inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
+                    var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
+                    Debug.WriteLine("DefaultGateway =" + msg2);
+                }
+                myRasDialer.DialAsync();
+                MessageBox.Show("VPN Tunneling enabled");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void myRasDialer_StateChanged(object sender, StateChangedEventArgs e)
+        {
+
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void checkBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            myRasDialer.DialAsyncCancel();
+
+        }
+
+        private void fullscreen_Checked(object sender, RoutedEventArgs e)
+        {
+            GoFullscreen();
+        }
+
+        private void fullscreen_Unchecked(object sender, RoutedEventArgs e)
+        {
+            //back to originial size. 
+        }
+
+
+        #endregion
+
+        #region Hooks
 
         #region HooksServer
         private void parseMessage(string buffer)
@@ -741,8 +833,8 @@ namespace DXGI_DesktopDuplication
             keyboardHook.HotKeyPress += new RamGecTools.KeyboardHook.myKeyboardHotkeyCallback(keyboardHook_HotKeyPress);
             keyboardHook.Install();
             //Installo Mouse
-            mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
-            mouseHook.Install();
+            //mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
+            //mouseHook.Install();
             //this.MouseWheel += MouseWheelEventHandler;
         }
 
@@ -820,81 +912,7 @@ namespace DXGI_DesktopDuplication
             WM_MBUTTONDOWN = 0x0207,
             WM_MBUTTONUP = 0x0208
         }
-
-        private async void UpdateQualityBtn_Click(object sender, RoutedEventArgs e)
-        {
-            //string newMTU = MTUBox
-            try
-            {
-                int newIQ = Int32.Parse(QualityBox.Text);
-                await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(250, newIQ);
-                await LiveControlManagerClient.Provider.ChangeColorDepth(Int32.Parse(ColorDepthBox.Text));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void checkBox_Checked(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                myRasPhonebook = new RasPhoneBook();
-                myRasPhonebook.Open();
-                RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
-                if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
-                    this.myRasPhonebook.Entries.Add(entry);
-
-                myRasDialer = new RasDialer();
-                myRasDialer.StateChanged += myRasDialer_StateChanged;
-                myRasDialer.EntryName = "VPN_DXGI";
-                myRasDialer.PhoneBookPath = null;
-                myRasDialer.Credentials = new System.Net.NetworkCredential(vpnuserbox.Text, vpnpwdbox.Text);
-                myRasDialer.PhoneBookPath = myRasPhonebook.Path;
-                var phonbookpath = myRasDialer.PhoneBookPath;
-                if (phonbookpath != null)
-                {
-                    //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
-                    Debug.WriteLine("Path to phonebook for VPN Entry:: " + phonbookpath);
-                    INIFile inif = new INIFile(phonbookpath);
-                    inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
-                    var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
-                    Debug.WriteLine("DefaultGateway =" + msg2);
-                }
-                myRasDialer.DialAsync();
-                MessageBox.Show("VPN Tunneling enabled");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void myRasDialer_StateChanged(object sender, StateChangedEventArgs e)
-        {
-
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void checkBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            myRasDialer.DialAsyncCancel();
-
-        }
-
-        private void fullscreen_Checked(object sender, RoutedEventArgs e)
-        {
-            GoFullscreen();
-        }
-
-        private void fullscreen_Unchecked(object sender, RoutedEventArgs e)
-        {
-            //back to originial size. 
-        }
+        #endregion
 
     }
 }
