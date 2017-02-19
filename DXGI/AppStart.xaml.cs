@@ -466,21 +466,38 @@ namespace DXGI_DesktopDuplication
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
 
             //this.serverManger.sendMessage
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
-            Console.WriteLine("M" + " " + x + " " + y);
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("C" + " " + "WM_LBUTTONUP" + " " + x + " " + y);
+            Dispatcher.Invoke(new Action(() =>
+            {
+                MousePositionXLabel.Content = Xabs.ToString();
+                MousePositionYLabel.Content = Yabs.ToString();
+                MouseEventLabel.Content = "WM_LBUTTONUP";
+            }));
+            Console.WriteLine("C" + " " + x + "WM_LBUTTONUP");
+
         }
 
         private void BGImage_MouseDown(object sender, MouseButtonEventArgs e)
         {
-           // throw new NotImplementedException();
-        }
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 4);
 
-        private void GoFullscreen()
-        {
-            ScrollView.Height = gridkhaki.Height;
-            ScrollView.Width = gridkhaki.Width;
-        }
+            double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
+            // throw new NotImplementedException();
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("C" + " " + "WM_LBUTTONDOWN" + " " + x + " " + y);
+            Console.WriteLine("C" + " " + x + "WM_LBUTTONDOWN" );
+            Dispatcher.Invoke(new Action(() =>
+            {
+                MousePositionXLabel.Content = Xabs.ToString();
+                MousePositionYLabel.Content = Yabs.ToString();
+                MouseEventLabel.Content = "WM_LBUTTONUP";
+            }));
 
+        }
+        
         void BGImage_MouseMove(object sender, MouseEventArgs e)
         {
 
@@ -495,6 +512,12 @@ namespace DXGI_DesktopDuplication
             //this.serverManger.sendMessage
             LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
             Console.WriteLine("M" + " " + x + " " + y);
+            Dispatcher.Invoke(new Action(() =>
+            {
+                MousePositionXLabel.Content = Xabs.ToString();
+                MousePositionYLabel.Content = Yabs.ToString();
+                MouseEventLabel.Content = "WM_LBUTTONUP";
+            }));
         }
 
         private void BGImage_MouseLeave(object sender, MouseEventArgs e)
@@ -579,6 +602,12 @@ namespace DXGI_DesktopDuplication
         private void fullscreen_Unchecked(object sender, RoutedEventArgs e)
         {
             //back to originial size. 
+        }
+
+        private void GoFullscreen()
+        {
+            ScrollView.Height = gridkhaki.Height;
+            ScrollView.Width = gridkhaki.Width;
         }
 
 
