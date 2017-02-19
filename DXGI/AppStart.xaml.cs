@@ -629,10 +629,19 @@ namespace DXGI_DesktopDuplication
             {
                 if (commands.GetValue(1).ToString().Equals("WM_LBUTTONDOWN"))
                 {
+                   
+                    int x = Convert.ToInt16(Double.Parse(commands[2]) * System.Windows.SystemParameters.PrimaryScreenWidth);
+                    int y = Convert.ToInt16(Double.Parse(commands[3]) * System.Windows.SystemParameters.PrimaryScreenHeight);
+                    NativeMethods.SetCursorPos(x, y);
+
                     inputSimulator.Mouse.LeftButtonDown();
                 }
                 else if (commands.GetValue(1).ToString().Equals("WM_LBUTTONUP"))
                 {
+                    int x = Convert.ToInt16(Double.Parse(commands[2]) * System.Windows.SystemParameters.PrimaryScreenWidth);
+                    int y = Convert.ToInt16(Double.Parse(commands[3]) * System.Windows.SystemParameters.PrimaryScreenHeight);
+                    NativeMethods.SetCursorPos(x, y);
+
                     inputSimulator.Mouse.LeftButtonUp();
 
                 }
