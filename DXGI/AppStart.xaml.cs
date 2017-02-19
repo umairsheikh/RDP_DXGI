@@ -98,6 +98,9 @@ namespace DXGI_DesktopDuplication
 
             NovaManagerServer = Managers.NovaServer.Instance.NovaManager;
             LiveControlManagerServer = Managers.NovaServer.Instance.LiveControlManager;
+
+            LiveControlManagerServer.Provider.SetQualityParameters(Int32.Parse(MTUBox.Text),Int32.Parse(QualityBox.Text), Int32.Parse(ColorDepthBox.Text));
+
             inputSimulator = new InputSimulator();
             NovaManagerServer.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
             NovaManagerServer.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
@@ -137,8 +140,6 @@ namespace DXGI_DesktopDuplication
             //Start Server Network Registration
             await InitNetworkManagerServer();
             LiveControlManagerServer.OnMouseKeyboardEventReceived += LiveControlManagerServer_OnMouseKeyboardEventReceived;
-
-
         }
         void LiveControlManagerServer_OnMouseKeyboardEventReceived(object sender, Network.Messages.LiveControl.MouseKeyboardNotification e)
         {
@@ -158,7 +159,7 @@ namespace DXGI_DesktopDuplication
         {
             NovaManagerClient = Managers.NovaClient.Instance.NovaManager;
             LiveControlManagerClient = Managers.NovaClient.Instance.LiveControlManager;
-
+            LiveControlManagerClient.Provider.SetQualityParameters(int.Parse(MTUBox.Text), int.Parse(QualityBox.Text), int.Parse(ColorDepthBox.Text));
             LiveControlManagerClient.OnScreenshotReceived += new EventHandler<ScreenshotMessageEventArgs>(LiveControlManager_OnScreenshotReceived);
 
             NovaManagerClient.OnIntroductionCompleted += new EventHandler<IntroducerIntroductionCompletedEventArgs>(ClientManager_OnIntroductionCompleted);
@@ -171,7 +172,6 @@ namespace DXGI_DesktopDuplication
             drawingVisual = new DrawingVisual();
 
         }
-
        
         void ClientManager_OnConnected(object sender, ConnectedEventArgs e)
         {
@@ -255,19 +255,9 @@ namespace DXGI_DesktopDuplication
             {
                 hostScreenWidth = (int)e.Screenshot.ScreenWidth;
                 hostScreenHeight = (int)e.Screenshot.ScreenHeight;
-               
+                GoFullscreen();
             }
-            //LiveShots.Enqueue(screenshot);
-            //if(LiveShots.Count == 0)
-            //{
-            //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => UpdateRegion(screenshot))));
-
-           //   Task.Run(() => updateRegionContinue());
-            //}
             UpdateRegion(screenshot);
-            //if(hostScreenWidth == 1280 && hostSctreenHeight == 960)
-            // Task.Factory.StartNew(()=> updateImageThread.)
-            //LiveControlManagerClient.RequestScreenshot();
         }
 
         private async Task UpdateRegion(Model.LiveControl.Screenshot screenshot)
@@ -334,7 +324,7 @@ namespace DXGI_DesktopDuplication
                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                     {
 
-                        //drawingContext.DrawImage(BGWritable, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
+                        //drawingContext.DrawImage(buffer, new Rect(0, 0, BGWritable.Width, BGWritable.Height));
                         drawingContext.DrawImage(bitmap, new Rect(screenshot.Region.X / ImageDivisor, screenshot.Region.Y / ImageDivisor, screenshot.Region.Width / ImageDivisor, screenshot.Region.Height / ImageDivisor));
                         // drawingContext.DrawImage()  
                         // drawingContext.DrawRectangle(new SolidColorBrush(Colors.Red), null,
@@ -527,14 +517,13 @@ namespace DXGI_DesktopDuplication
             MouseKeyboardIO.IsChecked = false;
         }
 
- 
-
         private async void UpdateQualityBtn_Click(object sender, RoutedEventArgs e)
         {
             //string newMTU = MTUBox
             try
             {
                 int newIQ = Int32.Parse(QualityBox.Text);
+
                 await LiveControlManagerClient.Provider.ChangeScreenShareDynamics(250, newIQ);
                 await LiveControlManagerClient.Provider.ChangeColorDepth(Int32.Parse(ColorDepthBox.Text));
             }
@@ -609,7 +598,6 @@ namespace DXGI_DesktopDuplication
             ScrollView.Height = gridkhaki.Height;
             ScrollView.Width = gridkhaki.Width;
         }
-
 
         #endregion
 

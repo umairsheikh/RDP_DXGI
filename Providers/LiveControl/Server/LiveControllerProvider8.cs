@@ -65,10 +65,10 @@ namespace Providers.LiveControl.Server
 
         private Stopwatch Timer { get; set; }
         public uint ScreenshotCounter = 0;
-        public static int mtu = 250;
-        public static int ImageQuality = 1;
+        //public static int mtu = 250;
+        //public static int ImageQuality = 1;
         private bool CaptureLoop = true;
-        public static int bpp = 8;
+        //public static int bpp = 32;
 
         public LiveControllerProvider8(NetworkPeer network)
             : base(network)
@@ -93,7 +93,6 @@ namespace Providers.LiveControl.Server
           */  //MirrorDriver2.DesktopChange += new EventHandler<DesktopMirror.DesktopChangeEventArgs>(MirrorDriver_DesktopChange);
         }
 
-
         public async Task MainSendScreenThread()
         {
             while(CaptureLoop)
@@ -106,7 +105,6 @@ namespace Providers.LiveControl.Server
 
         public async Task CaptureFrame()
         {
-
             FrameData frameData;
             duplicationManager.GetFrame(out frameData);
             //duplicationManager.GetChangedRects(ref frameData); //TODO pending
@@ -182,10 +180,7 @@ namespace Providers.LiveControl.Server
             newbitmap.Save(stream, ImageFormat.Png);
             SendFragmentedBitmap(stream.ToArray(),rectangle);
         }
-
         
-
-
         //on screen shared initiated old
         private void OnRequestScreenshotMessageReceived(MessageEventArgs<RequestScreenshotMessage> e)
         {

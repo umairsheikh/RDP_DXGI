@@ -27,29 +27,30 @@
             <Label Foreground="White" x:Name="LabelNovaId" Content=".." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="80,26,0,0"/>
             <Label Foreground="White" x:Name="LabelPassword" Content=".." HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="81,48,0,0"/>
             <Label Foreground="White" x:Name="Status" Content="..." HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="78,0,0,0"/>
-            <Label Foreground="White" x:Name="label" Content="RemoteID:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="122,27,0,0"/>
-            <Label Foreground="White" x:Name="label1" Content="Password:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="122,48,0,0"/>
-            <TextBox x:Name="PWD" HorizontalAlignment="Left" Height="19"  TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Margin="199,54,0,0"/>
-            <TextBox x:Name="RID" HorizontalAlignment="Left" Height="19"  TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Margin="199,30,0,0"/>
-            <Button x:Name="ConnectRemote" IsEnabled="True" Content="Connect Remote" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="ConnectRemote_Click" Margin="223,7,0,0"/>
-            <Button x:Name="startCapture" Content="HOST" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" Click="startCapture_Click" Margin="135,7,0,0"/>
+            <Label Foreground="White" x:Name="label" Content="RemoteID:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="376,27,0,0" Width="58"/>
+            <Label Foreground="White" x:Name="label1" Content="Password:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="376,48,0,0" Width="55"/>
+            <TextBox x:Name="PWD" HorizontalAlignment="Left" Height="19"  TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="111" Margin="447,54,0,0"/>
+            <TextBox x:Name="RID" HorizontalAlignment="Left" Height="19"  TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="108" Margin="447,29,0,0"/>
+            <Button x:Name="ConnectRemote" IsEnabled="True" Content="Connect Remote" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="91" Click="ConnectRemote_Click" Margin="448,6,0,0"/>
+            <Button x:Name="startCapture" Content="HOST" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="52" Click="startCapture_Click" Margin="135,7,0,0"/>
             <Label Foreground="White" x:Name="remoteConnection" Content="Status" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="12,0,0,0"/>
-            <Label Foreground="White" x:Name="UpdateQuality" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="332,4,0,0"/>
-            <Label Foreground="White" x:Name="ColorBpp" Content="ColorDepth:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="326,30,0,0"/>
-            <Label Foreground="White" x:Name="QualityLabel" Content="Quality:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="332,45,0,0"/>
-            <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="True" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Margin="399,54,0,0"/>
-            <TextBox x:Name="ColorDepthBox" HorizontalAlignment="Left" Height="17"  IsEnabled="True"  TextWrapping="Wrap" Text="8" VerticalAlignment="Top" Width="120" Margin="399,34,0,0"/>
-            <Button x:Name="UpdateQualityBtn" IsEnabled="true" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="98" Click="UpdateQualityBtn_Click"  Margin="422,7,0,0"/>
-            <CheckBox x:Name="fullscreen" Content="Maximize" HorizontalAlignment="Left" Margin="577,0,0,50" VerticalAlignment="Bottom" Width="72" Height="21" IsEnabled="True" Foreground="#FF23CDAE" Checked="fullscreen_Checked"  Unchecked="fullscreen_Unchecked" />
-            <CheckBox x:Name="checkBox" Content="VPN" HorizontalAlignment="Left" Margin="533,9,0,0" VerticalAlignment="Top" Width="43" Height="19" IsEnabled="True" Foreground="#FFFF4141" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked" />
-            <TextBox x:Name="vpnuserbox" HorizontalAlignment="Left" Height="18" Margin="592,32,0,0" TextWrapping="Wrap" Text="vpn1" VerticalAlignment="Top" Width="120"/>
-            <TextBox x:Name="vpnpwdbox" HorizontalAlignment="Left" Height="18" Margin="592,55,0,0" TextWrapping="Wrap" Text="Casper123" VerticalAlignment="Top" Width="120"/>
-            <Label x:Name="vpnusr" Content="User-VPN" HorizontalAlignment="Left" Margin="528,32,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1"/>
-            <Label x:Name="vpnpwd" Content="Pwd-VPN" HorizontalAlignment="Left" Margin="528,53,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1" />
-            <CheckBox x:Name="MouseKeyboardIO" Content="Mouse/Key" HorizontalAlignment="Left" Margin="644,10,0,0" VerticalAlignment="Top" Checked="MouseKeyboardIO_Checked" Foreground="#FFD15A22"/>
-            <Label Foreground="White" x:Name="MousePositionXLabel" Content="MousePositionX:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="749,5,0,0"/>
-            <Label Foreground="White" x:Name="MousePositionYLabel" Content="MouseLocationY:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="749,26,0,0"/>
-            <Label Foreground="White" x:Name="MouseEventLabel" Content="Event Mouse!" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="749,45,0,0"/>
+            <Label Foreground="White" x:Name="ColorBpp" Content="ColorDepth:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="172,32,0,0"/>
+            <Label Foreground="White" x:Name="QualityLabel" Content="Quality:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="192,51,0,0"/>
+            <TextBox x:Name="QualityBox" HorizontalAlignment="Left" Height="17" IsEnabled="True" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Margin="252,56,0,0"/>
+            <TextBox x:Name="ColorDepthBox" HorizontalAlignment="Left" Height="19"  IsEnabled="True"  TextWrapping="Wrap" Text="8" VerticalAlignment="Top" Width="120" Margin="252,34,0,0"/>
+            <!--<Button x:Name="UpdateQualityBtn" IsEnabled="true" Content="Update Quality" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="115" Click="UpdateQualityBtn_Click"  Margin="226,9,0,0"/>-->
+            <!--<CheckBox x:Name="fullscreen" Content="Maximize" HorizontalAlignment="Left" Margin="609,0,0,50" VerticalAlignment="Bottom" Width="72" Height="21" IsEnabled="True" Foreground="#FF23CDAE" Checked="fullscreen_Checked"  Unchecked="fullscreen_Unchecked" />-->
+            <CheckBox x:Name="checkBox" Content="VPN" HorizontalAlignment="Left" Margin="620,9,0,0" VerticalAlignment="Top" Width="43" Height="19" IsEnabled="True" Foreground="#FFFF4141" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked" />
+            <TextBox x:Name="vpnuserbox" HorizontalAlignment="Left" Height="18" Margin="624,32,0,0" TextWrapping="Wrap" Text="vpn1" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="vpnpwdbox" HorizontalAlignment="Left" Height="18" Margin="624,55,0,0" TextWrapping="Wrap" Text="Casper123" VerticalAlignment="Top" Width="120"/>
+            <Label x:Name="vpnusr" Content="User-VPN" HorizontalAlignment="Left" Margin="560,32,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1"/>
+            <Label x:Name="vpnpwd" Content="Pwd-VPN" HorizontalAlignment="Left" Margin="560,53,0,0" VerticalAlignment="Top" Foreground="#FFF1E1E1" />
+            <CheckBox x:Name="MouseKeyboardIO" Content="Mouse/Key" HorizontalAlignment="Left" Margin="676,10,0,0" VerticalAlignment="Top" Checked="MouseKeyboardIO_Checked" Foreground="#FFD15A22"/>
+            <Label Foreground="White" x:Name="MousePositionXLabel" Content="MousePositionX:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="774,7,0,0"/>
+            <Label Foreground="White" x:Name="MousePositionYLabel" Content="MouseLocationY:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="774,28,0,0"/>
+            <Label Foreground="White" x:Name="MouseEventLabel" Content="Event Mouse!" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="774,47,0,0"/>
+            <TextBox x:Name="MTUBox" HorizontalAlignment="Left" Height="19"  IsEnabled="True"  TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="120" Margin="252,11,0,0"/>
+            <Label Foreground="White" x:Name="ColorBpp_Copy" Content="MTU:" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="204,11,0,0"/>
             <!--<CheckBox x:Name="bpp4Checkbox" Content="4 BPP" HorizontalAlignment="Left" Margin="740,12,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
             <CheckBox x:Name="bpp8Checkbox" Content="8 BPP" HorizontalAlignment="Left" Margin="741,35,0,0" VerticalAlignment="Top" Foreground="Aqua"/>
             <CheckBox x:Name="bpp16Checkbox" Content="16 BPP" HorizontalAlignment="Left" Margin="741,60,0,0" VerticalAlignment="Top" Foreground="Aqua"/>

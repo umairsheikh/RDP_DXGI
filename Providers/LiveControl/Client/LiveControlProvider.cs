@@ -18,13 +18,14 @@ namespace Providers.LiveControl.Client
         private Dictionary<uint, Screenshot> pendingScreenshots;
         public IList<Screenshot> liveScreenshots;
 
+      
         public LiveControlProvider(NetworkPeer network)
             : base(network)
         {
             pendingScreenshots = new Dictionary<uint, Screenshot>(1000);
         }
 
-
+      
         public int GetMTU()
         {
             return Server.LiveControllerProvider8.mtu;
@@ -79,7 +80,6 @@ namespace Providers.LiveControl.Client
         {
             var RequestNewBpp = new RequestChangeColorDepth(bpp);
             Network.SendMessage(RequestNewBpp);
-           await  Task.Delay(2000);
             Server.LiveControllerProvider8.bpp = bpp;
         }
 
@@ -105,6 +105,9 @@ namespace Providers.LiveControl.Client
             Network.SendMessage(new MouseKeyboardNotification() {data = message });
         }
 
-       
+        public override void SetQualityParameters(int MTU, int Quality, int Bpp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
