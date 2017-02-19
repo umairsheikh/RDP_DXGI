@@ -65,11 +65,8 @@ namespace Providers.LiveControl.Server
 
         private Stopwatch Timer { get; set; }
         public uint ScreenshotCounter = 0;
-        //public static int mtu = 250;
-        //public static int ImageQuality = 1;
         private bool CaptureLoop = true;
-        //public static int bpp = 32;
-
+  
         public LiveControllerProvider8(NetworkPeer network)
             : base(network)
         {
@@ -128,8 +125,6 @@ namespace Providers.LiveControl.Server
             Network.RegisterMessageHandler<RequestChangeColorDepth>(OnRequestColorDepthChanged);
             Network.RegisterMessageHandler<RequestScreenshotMessage>(OnRequestScreenshotMessageReceived2);
             Network.RegisterMessageHandler<MouseKeyboardNotification>(OnResponseMouseKeyboardMessageReceived);
-           
-
         }
 
         private  async void OnRequestColorDepthChanged(MessageEventArgs<RequestChangeColorDepth> e)
@@ -138,11 +133,11 @@ namespace Providers.LiveControl.Server
             {
                 bpp = e.Message.Bpp;
                 CaptureLoop = false;
-                duplicationManager.ColorDepth = bpp;
             }
 
             mydispatchtoParse = Dispatcher.CurrentDispatcher;
-            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
+            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse,bpp);
+           
             duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady1;
             CaptureLoop = true;
             await CaptureFrame();
@@ -163,7 +158,7 @@ namespace Providers.LiveControl.Server
             }
 
             mydispatchtoParse = Dispatcher.CurrentDispatcher;
-            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse);
+            duplicationManager = DuplicationManager.GetInstance(mydispatchtoParse,bpp);
             duplicationManager.onNewFrameReady += DuplicationManager_onNewFrameReady1; 
             CaptureLoop = true;
             await CaptureFrame();

@@ -105,9 +105,6 @@ namespace Providers.LiveControl.Client
             Network.SendMessage(new MouseKeyboardNotification() {data = message });
         }
 
-        public override void SetQualityParameters(int MTU, int Quality, int Bpp)
-        {
-            throw new NotImplementedException();
-        }
+      
     }
 }

@@ -47,21 +47,22 @@ namespace DXGI_DesktopDuplication
         Encoder myEncoder;
         EncoderParameter myEncoderParameter;
         EncoderParameters myEncoderParameters;
-
+        public static int ColorDepth  { get; set; }
 
         private DuplicationManager()
         {
             Init();
         }
 
-        public static DuplicationManager GetInstance(Dispatcher dispatcher)
+        public static DuplicationManager GetInstance(Dispatcher dispatcher,int cbpp)
         {
             instance.SetDispatcher(dispatcher);
+            ColorDepth = cbpp;
             return instance;
         }
         public delegate void NewFrameReady(Bitmap newBitmap,System.Drawing.Rectangle rectangle);
         public event NewFrameReady onNewFrameReady;
-        public int ColorDepth  { get; set; }
+     
           private void Init()
         {
             // # of graphics card adapter
@@ -106,7 +107,6 @@ namespace DXGI_DesktopDuplication
             duplicatedOutput = output1.DuplicateOutput(device);
 
             screenTexture = new Texture2D(device, textureDesc);
-            ColorDepth = 8;
         }
 
         public OutputDescription GetOutputDescription()
@@ -398,18 +398,56 @@ namespace DXGI_DesktopDuplication
                                 device.ImmediateContext.CopyResource(screenTexture2D, screenTexture);
                             screenResource.Dispose();
 
+                            Bitmap bitmap;
+                            if (ColorDepth == 4)
+                            {
+                                Bitmap target = Texture2DToBitmap();
+                                 bitmap = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+                                //bitmap.Save("save" + (counter++) + ".bmp");
+                                data.Frame = screenTexture;
+                                // Capture done
+                                captureDone = true;
+                                FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }else if (ColorDepth == 8)
+                            {
+                                Bitmap target = Texture2DToBitmap();
+                                bitmap = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                                //bitmap.Save("save" + (counter++) + ".bmp");
+                                data.Frame = screenTexture;
+                                // Capture done
+                                captureDone = true;
+                                FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }
+                             else if (ColorDepth == 16)
+                            {
+                                Bitmap target = Texture2DToBitmap();
+                                bitmap = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+                                //bitmap.Save("save" + (counter++) + ".bmp");
+                                data.Frame = screenTexture;
+                                // Capture done
+                                captureDone = true;
+                                FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }else if (ColorDepth == 24)
+                            {
+                                Bitmap target = Texture2DToBitmap();
+                                bitmap = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                                //bitmap.Save("save" + (counter++) + ".bmp");
+                                data.Frame = screenTexture;
+                                // Capture done
+                                captureDone = true;
+                                FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }
+                            else if (ColorDepth == 32)
+                            {
+                                Bitmap target = Texture2DToBitmap();
+                                bitmap = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                                //bitmap.Save("save" + (counter++) + ".bmp");
+                                data.Frame = screenTexture;
+                                // Capture done
+                                captureDone = true;
+                                FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }
 
-                            Bitmap bitmap = Texture2DToBitmap();
-
-                            // Save the output
-                            //bitmap.Save("save" + (counter++) + ".bmp");
-
-                            data.Frame = screenTexture;
-
-                            // Capture done
-                            captureDone = true;
-                            
-                            FireNewFrameEvent(bitmap, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
 
                         }
 

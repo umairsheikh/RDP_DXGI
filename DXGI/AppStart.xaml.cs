@@ -432,8 +432,9 @@ namespace DXGI_DesktopDuplication
 
         }
 
-        private void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
+        private async void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
         {
+
             BGImage.MouseLeave += BGImage_MouseLeave;
             BGImage.MouseMove += BGImage_MouseMove;
             BGImage.MouseDown += BGImage_MouseDown;
@@ -444,69 +445,72 @@ namespace DXGI_DesktopDuplication
 
         }
 
-        private void BGImage_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void BGImage_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // throw new NotImplementedException();
             double Xabs = e.GetPosition(BGImage).X;
             double Yabs = e.GetPosition(BGImage).Y;
-            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y = Math.Round((Yabs / hostScreenHeight), 4);
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
 
             double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
 
             //this.serverManger.sendMessage
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("C" + " " + "WM_LBUTTONUP" + " " + x + " " + y);
+             var eventMessage =  "C" + " " + "WM_LBUTTONUP" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
             Dispatcher.Invoke(new Action(() =>
             {
                 MousePositionXLabel.Content = Xabs.ToString();
                 MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = "WM_LBUTTONUP";
+                MouseEventLabel.Content = eventMessage;
             }));
             Console.WriteLine("C" + " " + x + "WM_LBUTTONUP");
 
         }
 
-        private void BGImage_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void BGImage_MouseDown(object sender, MouseButtonEventArgs e)
         {
             double Xabs = e.GetPosition(BGImage).X;
             double Yabs = e.GetPosition(BGImage).Y;
-            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y = Math.Round((Yabs / hostScreenHeight), 4);
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight),2);
 
             double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
             // throw new NotImplementedException();
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("C" + " " + "WM_LBUTTONDOWN" + " " + x + " " + y);
+            string eventMessage = "C" + " " + "WM_LBUTTONDOWN" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
             Console.WriteLine("C" + " " + x + "WM_LBUTTONDOWN" );
             Dispatcher.Invoke(new Action(() =>
             {
                 MousePositionXLabel.Content = Xabs.ToString();
                 MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = "WM_LBUTTONUP";
+                MouseEventLabel.Content = eventMessage;
             }));
 
         }
         
-        void BGImage_MouseMove(object sender, MouseEventArgs e)
+        async void  BGImage_MouseMove(object sender, MouseEventArgs e)
         {
 
             double Xabs = e.GetPosition(BGImage).X;
             double Yabs = e.GetPosition(BGImage).Y;
-            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y = Math.Round((Yabs / hostScreenHeight), 4);
+            double x = Math.Round((Xabs / hostScreenWidth),2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight),2);
 
             double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
 
             //this.serverManger.sendMessage
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
-            Console.WriteLine("M" + " " + x + " " + y);
-            Dispatcher.Invoke(new Action(() =>
+            var eventMessage = ("M" + " " + x + " " + y);
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+            
+             Dispatcher.Invoke(new Action(() =>
             {
                 MousePositionXLabel.Content = Xabs.ToString();
                 MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = "WM_LBUTTONUP";
+                MouseEventLabel.Content = eventMessage;
             }));
         }
 

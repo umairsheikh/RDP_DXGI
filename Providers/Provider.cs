@@ -15,9 +15,9 @@ namespace Providers
     /// <remarks>REVISION: The Provider layer will not provide any Begin/End async method patterns and will not provide any AsTask() methods. It will only expose events such as OnChatMessageReceived and OnFileTransferProgress and OnFileTransferCompleted. It is up to the Manager layer to invent DownloadFileAsync() and DownloadFileAsTask() and SendChatMessage(). And we are no longer using the Begin/End async pattern anyways. It looks nice, but it is unnecessary extra work. The events exposed by the Provider layer should be just enough to implement the task methods.</remarks>
     public abstract class Provider
     {
-        public static int mtu = 250;
-        public static int ImageQuality = 1;
-        public static int bpp = 32;
+        public static int mtu;          // = 250;
+        public static int ImageQuality; // = 1;
+        public static int bpp;          //= 32;
         /// <summary>
         /// Gets the network all providers are bound to.
         /// </summary>
