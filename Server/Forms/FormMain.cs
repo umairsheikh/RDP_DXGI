@@ -38,6 +38,7 @@ namespace Server.Forms
             NovaManager.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
             NovaManager.OnNewPasswordGenerated += new EventHandler<PasswordGeneratedEventArgs>(ServerManager_OnNewPasswordGenerated);
             NovaManager.Network.OnConnected += new EventHandler<Network.ConnectedEventArgs>(Network_OnConnected);
+            inputSimulator = new InputSimulator();
             InitializeComponent();
         }
 
@@ -187,10 +188,10 @@ namespace Server.Forms
             if (commands.GetValue(0).Equals("M")) //mouse movement
             {
                 //16 bit è più veloce di 32
-                int x = Convert.ToInt16(Double.Parse(commands[1]) * Screen.PrimaryScreen.WorkingArea.Size.Width);//System.Windows.SystemParameters.PrimaryScreenWidth);
-                int y = Convert.ToInt16(Double.Parse(commands[2]) * Screen.PrimaryScreen.WorkingArea.Size.Height);//System.Windows.SystemParameters.PrimaryScreenHeight);
+                int x = Convert.ToInt16(Double.Parse(commands[1]) * Screen.PrimaryScreen.Bounds.Width);//System.Windows.SystemParameters.PrimaryScreenWidth);
+                int y = Convert.ToInt16(Double.Parse(commands[2]) * Screen.PrimaryScreen.Bounds.Height);//System.Windows.SystemParameters.PrimaryScreenHeight);
                 NativeMethods.SetCursorPos(x, y);
-                inputSimulator.Mouse.MoveMouseToPositionOnVirtualDesktop(x, y);
+                inputSimulator.Mouse.MoveMouseTo(x, y);
             }
             else if (commands.GetValue(0).ToString().Equals("W"))
             { //scroll
@@ -199,23 +200,28 @@ namespace Server.Forms
             }
             else if (commands.GetValue(0).ToString().Equals("C")) //click
             {
-                if (commands.GetValue(1).ToString().Equals("WM_LBUTTONDOWN"))
-                {
-                    inputSimulator.Mouse.LeftButtonDown();
-                }
-                else if (commands.GetValue(1).ToString().Equals("WM_LBUTTONUP"))
-                {
-                    inputSimulator.Mouse.LeftButtonUp();
+                Debug.WriteLine(commands.GetValue(0).ToString());
+                inputSimulator.Mouse.LeftButtonDown();
+                inputSimulator.Mouse.LeftButtonUp();
+                //Debug.WriteLine(commands.GetValue(1).ToString());
 
-                }
-                else if (commands.GetValue(1).ToString().Equals("WM_RBUTTONDOWN"))
-                {
-                    inputSimulator.Mouse.RightButtonDown();
-                }
-                else if (commands.GetValue(1).ToString().Equals("WM_RBUTTONUP"))
-                {
-                    inputSimulator.Mouse.RightButtonUp();
-                }
+                //if (commands.GetValue(1).ToString().Equals("WM_LBUTTONDOWN"))
+                //{
+                //    inputSimulator.Mouse.LeftButtonDown();
+                //}
+                //else if (commands.GetValue(1).ToString().Equals("WM_LBUTTONUP"))
+                //{
+                //    inputSimulator.Mouse.LeftButtonUp();
+
+                //}
+                //else if (commands.GetValue(1).ToString().Equals("WM_RBUTTONDOWN"))
+                //{
+                //    inputSimulator.Mouse.RightButtonDown();
+                //}
+                //else if (commands.GetValue(1).ToString().Equals("WM_RBUTTONUP"))
+                //{
+                //    inputSimulator.Mouse.RightButtonUp();
+                //}
 
             }
             else if (commands.GetValue(0).ToString().Equals("K")) //keyboard

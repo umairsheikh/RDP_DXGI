@@ -434,7 +434,9 @@ namespace DXGI_DesktopDuplication
         private void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
         {
             BGImage.MouseLeave += BGImage_MouseLeave;
-            BGImage.MouseMove += BGImage_MouseMove;
+            //BGImage.MouseMove += BGImage_MouseMove;
+            //BGImage.MouseDown += BGImage_MouseDown;
+            //BGImage.MouseUp += BGImage_MouseUp;
             //ScrollView.Width = 900;
             //ScrollView.Height = 600;
             InstallKeyboard();
@@ -442,31 +444,31 @@ namespace DXGI_DesktopDuplication
 
         }
 
+        private void BGImage_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            // throw new NotImplementedException();
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+            double x = Math.Round((Xabs / hostScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 4);
+
+            double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
+
+            //this.serverManger.sendMessage
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("M" + " " + x.ToString() + " " + y.ToString());
+            Console.WriteLine("M" + " " + x + " " + y);
+        }
+
+        private void BGImage_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+           // throw new NotImplementedException();
+        }
+
         private void GoFullscreen()
         {
-            ////var window = MainWindow.GetWindow(this);
-            //if (window.WindowState != System.Windows.WindowState.Maximized)
-            //   window.WindowState = System.Windows.WindowState.Maximized;
-
-            //~ make BGImage, GridImage, ScrollView ~//
             ScrollView.Height = gridkhaki.Height;
             ScrollView.Width = gridkhaki.Width;
-            
-            //updateBox.Text=("WindowMain w/h ::"+WindowMain.Width.ToString()+"/"+ WindowMain.Height.ToString());
-
-
-            //Password.Visibility = Visibility.Collapsed;
-            //LabelNovaId.Visibility = Visibility.Collapsed;
-            //LabelPassword.Visibility = Visibility.Collapsed;
-            //Status.Visibility = Visibility.Collapsed;
-            //label.Visibility = Visibility.Collapsed;
-            //label1.Visibility = Visibility.Collapsed;
-            //PWD.Visibility = Visibility.Collapsed;
-            //RID.Visibility = Visibility.Collapsed;
-            //ConnectRemote.Visibility = Visibility.Collapsed;
-            //startCapture.Visibility = Visibility.Collapsed;
-            //remoteConnection.Visibility = Visibility.Collapsed;
-
         }
 
         void BGImage_MouseMove(object sender, MouseEventArgs e)
@@ -739,8 +741,8 @@ namespace DXGI_DesktopDuplication
             keyboardHook.HotKeyPress += new RamGecTools.KeyboardHook.myKeyboardHotkeyCallback(keyboardHook_HotKeyPress);
             keyboardHook.Install();
             //Installo Mouse
-            //mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
-            //mouseHook.Install();
+            mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
+            mouseHook.Install();
             //this.MouseWheel += MouseWheelEventHandler;
         }
 
@@ -876,28 +878,6 @@ namespace DXGI_DesktopDuplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //myRasPhonebook = new RasPhoneBook();
-            //myRasPhonebook.Open();
-            //RasEntry entry = RasEntry.CreateVpnEntry("VPN_DXGI", "69.87.217.138", RasVpnStrategy.PptpOnly, RasDevice.GetDeviceByName("(PPTP)", RasDeviceType.Vpn, false));
-            //if (!RasEntry.Exists("VPN_DXGI", myRasPhonebook.Path))
-            //    this.myRasPhonebook.Entries.Add(entry);
-
-            //myRasDialer = new RasDialer();
-            //myRasDialer.StateChanged += myRasDialer_StateChanged;
-            //myRasDialer.EntryName = "VPN_DXGI";
-            //myRasDialer.PhoneBookPath = null;
-            //myRasDialer.Credentials = new System.Net.NetworkCredential(vpnuserbox.Text, vpnpwdbox.Text);
-            //myRasDialer.PhoneBookPath = myRasPhonebook.Path;
-            //var phonbookpath = myRasDialer.PhoneBookPath;
-            //if (phonbookpath != null)
-            //{
-            //    //Dispatcher.BeginInvoke((Action)(() => { updateLogVPN(phonbookpath); }));
-            //    Debug.WriteLine("Path to phonebook for VPN Entry:: "+phonbookpath);
-            //    INIFile inif = new INIFile(phonbookpath);
-            //    inif.Write("VPN_DXGI", "IpPrioritizeRemote", "0");
-            //    var msg2 = inif.Read("VPN_DXGI", "IpPrioritizeRemote");
-            //    Debug.WriteLine("DefaultGateway =" + msg2);
-            //}
         }
 
         private void checkBox_Unchecked(object sender, RoutedEventArgs e)
