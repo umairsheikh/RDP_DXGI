@@ -171,6 +171,10 @@
       <Project>{0d9cbf57-19a7-4007-8945-e5ee4584a6fb}</Project>
       <Name>Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MouseKeyHook\MouseKeyHook.csproj">
+      <Project>{f52aa97e-180a-40ed-8f2b-09080171d6c7}</Project>
+      <Name>MouseKeyHook</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Network\Network.csproj">
       <Project>{5bb29303-0df8-4d32-9117-a022c1b6fdb9}</Project>
       <Name>Network</Name>

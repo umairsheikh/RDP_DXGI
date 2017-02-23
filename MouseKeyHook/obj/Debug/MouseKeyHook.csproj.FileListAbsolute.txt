@@ -1,0 +1,8 @@
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\bin\Debug\Gma.System.MouseKeyHook.dll
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\bin\Debug\Gma.System.MouseKeyHook.pdb
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\bin\Debug\MouseKeyboardActivityMonitor.xml
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\bin\Debug\Gma.System.MouseKeyHook.dll.CodeAnalysisLog.xml
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\bin\Debug\Gma.System.MouseKeyHook.dll.lastcodeanalysissucceeded
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\obj\Debug\MouseKeyHook.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\obj\Debug\Gma.System.MouseKeyHook.dll
+C:\Users\Administrator\Downloads\globalmousekeyhook-vNext\globalmousekeyhook-vNext\MouseKeyHook\obj\Debug\Gma.System.MouseKeyHook.pdb

@@ -23,12 +23,13 @@
 /// <author>Ramunas Geciauskas</author>
 /// <summary>Low level Windows keyboard hook class</summary>
 #endregion
-			
+
 using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Windows.Input;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace RamGecTools
 {
@@ -36,7 +37,12 @@ namespace RamGecTools
     /// Class for intercepting low level keyboard hooks
     /// </summary>
     public class KeyboardHook
-    {        
+    {
+
+        public Dictionary<string, int> VkeysDictionary;
+        
+            
+        
         /// <summary>
         /// Virtual Keys
         /// </summary>
@@ -247,8 +253,10 @@ namespace RamGecTools
         /// <summary>
         /// Internal callback processing function
         /// </summary>
-        private delegate IntPtr KeyboardHookHandler(int nCode, IntPtr wParam, IntPtr lParam);
-        private KeyboardHookHandler hookHandler;
+        public delegate IntPtr KeyboardHookHandler(int nCode, IntPtr wParam, IntPtr lParam);
+        public  KeyboardHookHandler hookHandler;
+        
+
 
         /// <summary>
         /// Function that will be called when defined events occur
@@ -269,7 +277,138 @@ namespace RamGecTools
         /// <summary>
         /// Hook ID
         /// </summary>
-        private IntPtr hookID = IntPtr.Zero;
+        private static IntPtr hookID = IntPtr.Zero;
+
+        public void addVirtualKeysDictionary()
+        {
+            VkeysDictionary.Add("BACK", 0x08);        // BACKSPACE key
+            VkeysDictionary.Add("TAB", 0x09);         // TAB key
+            VkeysDictionary.Add("CLEAR", 0x0C);       // CLEAR key
+            VkeysDictionary.Add("RETURN", 0x0D);      // ENTER key
+            VkeysDictionary.Add("SHIFT", 0x10);       // SHIFT key
+            VkeysDictionary.Add("CONTROL", 0x11);     // CTRL key
+            VkeysDictionary.Add("MENU", 0x12);        // ALT key
+            VkeysDictionary.Add("PAUSE", 0x13);       // PAUSE key
+            VkeysDictionary.Add("CAPITAL", 0x14);     // CAPS LOCK key
+            VkeysDictionary.Add("KANA", 0x15);        // Input Method Editor (IME) Kana mode
+            VkeysDictionary.Add("HANGUL", 0x15);      // IME Hangul mode
+            VkeysDictionary.Add("JUNJA", 0x17);       // IME Junja mode
+            VkeysDictionary.Add("FINAL", 0x18);       // IME final mode
+            VkeysDictionary.Add("HANJA", 0x19);      // IME Hanja mode
+            VkeysDictionary.Add("KANJI", 0x19);       // IME Kanji mode
+            VkeysDictionary.Add("ESCAPE", 0x1B);      // ESC key
+            VkeysDictionary.Add("CONVERT", 0x1C);     // IME convert
+            VkeysDictionary.Add("NONCONVERT", 0x1D);  // IME nonconvert
+            VkeysDictionary.Add("ACCEPT", 0x1E);      // IME accept
+            VkeysDictionary.Add("MODECHANGE", 0x1F);  // IME mode change request
+            VkeysDictionary.Add("SPACE", 0x20);      // SPACEBAR
+            VkeysDictionary.Add("PRIOR", 0x21);       // PAGE UP key
+            VkeysDictionary.Add("NEXT", 0x22);        // PAGE DOWN key
+            VkeysDictionary.Add("END", 0x23);         // END key
+            VkeysDictionary.Add("HOME", 0x24);        // HOME key
+            VkeysDictionary.Add("LEFT", 0x25);        // LEFT ARROW key
+            VkeysDictionary.Add("UP", 0x26);       // UP ARROW key
+            VkeysDictionary.Add("RIGHT", 0x27);       // RIGHT ARROW key
+            VkeysDictionary.Add("DOWN", 0x28);        // DOWN ARROW key
+            VkeysDictionary.Add("SELECT", 0x29);      // SELECT key
+            VkeysDictionary.Add("PRINT", 0x2A);       // PRINT key
+            VkeysDictionary.Add("EXECUTE", 0x2B);     // EXECUTE key
+            VkeysDictionary.Add("SNAPSHOT", 0x2C);    // PRINT SCREEN key
+            VkeysDictionary.Add("INSERT", 0x2D);      // INS key
+            VkeysDictionary.Add("DELETE", 0x2E);      // DEL key
+            VkeysDictionary.Add("HELP", 0x2F);        // HELP key
+            VkeysDictionary.Add("D0", 0x30);       // 0 key
+            VkeysDictionary.Add("D1", 0x31);       // 1 key
+            VkeysDictionary.Add("D2", 0x32);       // 2 key
+            VkeysDictionary.Add("D3", 0x33);       // 3 key
+            VkeysDictionary.Add("D4", 0x34);       // 4 key
+            VkeysDictionary.Add("D5", 0x35);       // 5 key
+            VkeysDictionary.Add("D6", 0x36);       // 6 key
+            VkeysDictionary.Add("D7", 0x37);       // 7 key
+            VkeysDictionary.Add("D8", 0x38);       // 8 key
+            VkeysDictionary.Add("D9", 0x39);       // 9 key
+            VkeysDictionary.Add("A", 0x41);       // A key
+            VkeysDictionary.Add("B", 0x42);       // B key
+            VkeysDictionary.Add("C", 0x43);       // C key
+            VkeysDictionary.Add("D", 0x44);       // D key
+            VkeysDictionary.Add("E", 0x45);       // E key
+            VkeysDictionary.Add("F", 0x46);       // F key
+            VkeysDictionary.Add("G", 0x47);       // G key
+            VkeysDictionary.Add("H", 0x48);       // H key
+            VkeysDictionary.Add("I", 0x49);       // I key
+            VkeysDictionary.Add("J", 0x4A);       // J key
+            VkeysDictionary.Add("K", 0x4B);       // K key
+            VkeysDictionary.Add("L", 0x4C);       // L key
+            VkeysDictionary.Add("M", 0x4D);       // M key
+            VkeysDictionary.Add("N", 0x4E);       // N key
+            VkeysDictionary.Add("O", 0x4F);       // O key
+            VkeysDictionary.Add("P", 0x50);       // P key
+            VkeysDictionary.Add("Q", 0x51);       // Q key
+            VkeysDictionary.Add("R", 0x52);       // R key
+            VkeysDictionary.Add("S", 0x53);       // S key
+            VkeysDictionary.Add("T", 0x54);       // T key
+            VkeysDictionary.Add("U", 0x55);       // U key
+            VkeysDictionary.Add("V", 0x56);       // V key
+            VkeysDictionary.Add("W", 0x57);       // W key
+            VkeysDictionary.Add("X", 0x58);       // X key
+            VkeysDictionary.Add("Y", 0x59);       // Y key
+            VkeysDictionary.Add("Z", 0x5A);       // Z key
+            VkeysDictionary.Add("LWin", 0x5B);        // Left Windows key (Microsoft Natural keyboard)
+            VkeysDictionary.Add("RWin", 0x5C);        // Right Windows key (Natural keyboard)
+            VkeysDictionary.Add("APPS", 0x5D);        // Applications key (Natural keyboard)
+            VkeysDictionary.Add("Sleep", 0x5F);      // Computer Sleep key
+            VkeysDictionary.Add("NUMPAD0", 0x60);     // Numeric keypad 0 key
+            VkeysDictionary.Add("NUMPAD1", 0x61);     // Numeric keypad 1 key
+            VkeysDictionary.Add("NUMPAD2", 0x62);     // Numeric keypad 2 key
+            VkeysDictionary.Add("NUMPAD3", 0x63);     // Numeric keypad 3 key
+            VkeysDictionary.Add("NUMPAD4", 0x64);     // Numeric keypad 4 key
+            VkeysDictionary.Add("NUMPAD5", 0x65);     // Numeric keypad 5 key
+            VkeysDictionary.Add("NUMPAD6", 0x66);     // Numeric keypad 6 key
+            VkeysDictionary.Add("NUMPAD7", 0x67);     // Numeric keypad 7 key
+            VkeysDictionary.Add("NUMPAD8", 0x68);     // Numeric keypad 8 key
+            VkeysDictionary.Add("NUMPAD9", 0x69);     // Numeric keypad 9 key
+            VkeysDictionary.Add("MULTIPLY", 0x6A);    // Multiply key
+            VkeysDictionary.Add("ADD", 0x6B);         // Add key
+            VkeysDictionary.Add("SEPARATOR", 0x6C);   // Separator key
+            VkeysDictionary.Add("SUBTRACT", 0x6D);    // Subtract key
+            VkeysDictionary.Add("DECIMAL", 0x6E);     // Decimal key
+            VkeysDictionary.Add("DIVIDE", 0x6F);      // Divide key
+            VkeysDictionary.Add("F1", 0x70);          // F1 key
+            VkeysDictionary.Add("F2", 0x71);          // F2 key
+            VkeysDictionary.Add("F3", 0x72);          // F3 key
+            VkeysDictionary.Add("F4", 0x73);          // F4 key
+            VkeysDictionary.Add("F5", 0x74);          // F5 key
+            VkeysDictionary.Add("F6", 0x75);          // F6 key
+            VkeysDictionary.Add("F7", 0x76);          // F7 key
+            VkeysDictionary.Add("F8", 0x77);          // F8 key
+            VkeysDictionary.Add("F9", 0x78);          // F9 key
+            VkeysDictionary.Add("F10", 0x79);         // F10 key
+            VkeysDictionary.Add("F11", 0x7A);         // F11 key
+            VkeysDictionary.Add("F12", 0x7B);         // F12 key
+            VkeysDictionary.Add("F13", 0x7C);         // F13 key
+            VkeysDictionary.Add("F14", 0x7D);         // F14 key
+            VkeysDictionary.Add("F15", 0x7E);         // F15 key
+            VkeysDictionary.Add("F16", 0x7F);         // F16 key
+            VkeysDictionary.Add("F17", 0x80);         // F17 key  
+            VkeysDictionary.Add("F18", 0x81);         // F18 key  
+            VkeysDictionary.Add("F19", 0x82);         // F19 key  
+            VkeysDictionary.Add("F20", 0x83);         // F20 key  
+            VkeysDictionary.Add("F21", 0x84);         // F21 key  
+            VkeysDictionary.Add("F22", 0x85);         // F22 key, (PPC only) Key used to lock device.
+            VkeysDictionary.Add("F23", 0x86);         // F23 key  
+            VkeysDictionary.Add("F24", 0x87);         // F24 key  
+            VkeysDictionary.Add("NUMLOCK", 0x90);     // NUM LOCK key
+            VkeysDictionary.Add("SCROLL", 0x91);      // SCROLL LOCK key
+            VkeysDictionary.Add("LSHIFT", 0xA0);      // Left SHIFT key
+            VkeysDictionary.Add("RSHIFT", 0xA1);      // Right SHIFT key
+            VkeysDictionary.Add("LCONTROLKEY", 0xA2);    // Left CONTROL key
+            VkeysDictionary.Add("RCONTROLKEY", 0xA3);    // Right CONTROL key
+            VkeysDictionary.Add("LMENU", 0xA4);       // Left MENU key
+            VkeysDictionary.Add("RMENU", 0xA5);       // Right MENU key
+
+
+        }
+
         /// <summary>
         /// Install low level keyboard hook
         /// </summary>
@@ -277,6 +416,7 @@ namespace RamGecTools
         {
             hookHandler = HookFunc;
             hookID = SetHook(hookHandler);
+            GCHandle.Alloc(hookHandler);
         }
 
         /// <summary>
@@ -287,16 +427,25 @@ namespace RamGecTools
             UnhookWindowsHookEx(hookID);
         }
 
+
         /// <summary>
         /// Registers hook with Windows API
         /// </summary>
         /// <param name="proc">Callback function</param>
         /// <returns>Hook ID</returns>
-        
         private IntPtr SetHook(KeyboardHookHandler proc)
         {
-            using (ProcessModule module = Process.GetCurrentProcess().MainModule)
-                   return SetWindowsHookEx(13, proc, GetModuleHandle(module.ModuleName), 0);
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(13, proc, GetModuleHandle(curModule.ModuleName),0);
+                //GetModuleHandle(curModule.ModuleName), 0);
+            }
+
+            //ProcessModule module = Process.GetCurrentProcess().MainModule;
+
+            //    Hid = GetModuleHandle(module.ModuleName);
+            //    return SetWindowsHookEx(13, proc, Hid, 0);
         }
 
 
@@ -412,15 +561,21 @@ namespace RamGecTools
                         if (KeyUp != null)
                             KeyUp((VKeys)Marshal.ReadInt32(lParam));*/
                 }
-                return CallNextHookEx(hookID, nCode, wParam, lParam);
+                return    CallNextHookEx(hookID, nCode, wParam, lParam);
             }
             catch
             {
-                Uninstall();
-                Install();
-               return CallNextHookEx(hookID, nCode, wParam, lParam);
+                return (IntPtr)1;
+                // Uninstall();
+                // Install();
+                //return CallNextHookEx(hookID, nCode, wParam, lParam);
             }
             
+        }
+        public KeyboardHook()
+        {
+            addVirtualKeysDictionary(); 
+           //GCHandle.Alloc(hookHandler);
         }
 
         /// <summary>
@@ -440,7 +595,7 @@ namespace RamGecTools
         private const int WM_KEYUP = 0x101;
         private const int WM_SYSKEYUP = 0x105;
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto,  SetLastError = true)]
         private static extern IntPtr SetWindowsHookEx(int idHook, KeyboardHookHandler lpfn, IntPtr hMod, uint dwThreadId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]

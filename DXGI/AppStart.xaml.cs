@@ -35,7 +35,8 @@ using HookerServer;
 using Controls.LiveControl;
 using DotRas;
 using SharpDX;
-
+using Gma.System.MouseKeyHook;
+using System.Windows.Forms;
 
 namespace DXGI_DesktopDuplication
 {
@@ -59,10 +60,12 @@ namespace DXGI_DesktopDuplication
         private Queue<Model.LiveControl.Screenshot> LiveShots;
 
         //Hook Client
-        RamGecTools.MouseHook mouseHook = new RamGecTools.MouseHook();
-        RamGecTools.KeyboardHook keyboardHook = new RamGecTools.KeyboardHook();
+        RamGecTools.MouseHook mouseHook;// = new RamGecTools.MouseHook();
+        RamGecTools.KeyboardHook keyboardHook;// = new RamGecTools.KeyboardHook();
         private LayoutManager layout;
         private ServerManager serverManger;
+        private bool focussedOnForm = false;
+
 
         //Client Screen share 
         private WriteableBitmap BGWritable;
@@ -75,23 +78,26 @@ namespace DXGI_DesktopDuplication
         private int hostScreenWidth;
         private int hostScreenHeight;
 
+        //VKeys Dictionary
+        public Dictionary<string, int> VkeysDictionary;
 
         //VPN
         private DotRas.RasPhoneBook myRasPhonebook;
         private static DotRas.RasDialer myRasDialer;
 
- 
+        private IKeyboardMouseEvents m_Events;
+
         public AppStart()
         {
             InitializeComponent();
+           
+         
             screenImagePositionX = SystemParameters.WorkArea.Width;
             screenImagePositionY = SystemParameters.WorkArea.Height;
 
             Console.WriteLine("{0}, {1}", SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
             Console.WriteLine("{0}, {1}", SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         }
-
-
         #region ServeSettings
         public async Task InitNetworkManagerServer()
         {
@@ -99,7 +105,7 @@ namespace DXGI_DesktopDuplication
             NovaManagerServer = Managers.NovaServer.Instance.NovaManager;
             LiveControlManagerServer = Managers.NovaServer.Instance.LiveControlManager;
 
-            LiveControlManagerServer.Provider.SetQualityParameters(Int32.Parse(MTUBox.Text),Int32.Parse(QualityBox.Text), Int32.Parse(ColorDepthBox.Text));
+            LiveControlManagerServer.Provider.SetQualityParameters(Int32.Parse(MTUBox.Text), Int32.Parse(QualityBox.Text), Int32.Parse(ColorDepthBox.Text));
 
             inputSimulator = new InputSimulator();
             NovaManagerServer.OnIntroducerRegistrationResponded += NovaManager_OnIntroducerRegistrationResponded;
@@ -147,9 +153,6 @@ namespace DXGI_DesktopDuplication
             parseMessage(msgRecvd);
         }
 
-   
-
-
 
         #endregion
 
@@ -172,7 +175,7 @@ namespace DXGI_DesktopDuplication
             drawingVisual = new DrawingVisual();
 
         }
-       
+
         void ClientManager_OnConnected(object sender, ConnectedEventArgs e)
         {
             //  ButtonConnect.Set(() => ButtonConnect.Text, "Connected.");
@@ -196,10 +199,10 @@ namespace DXGI_DesktopDuplication
                         case ResponseIntroducerIntroductionCompletedMessage.Reason.WrongPassword:
                             //TextBox_Password.Set(() => TextBox_Password.Text, String.Empty); // clear the password box for re-entry
                             remoteConnection.Content = "Enter correct password/login";
-                            MessageBox.Show("Please enter the correct password.");
+                            System.Windows.MessageBox.Show("Please enter the correct password.");
                             break;
                         case ResponseIntroducerIntroductionCompletedMessage.Reason.Banned:
-                            MessageBox.Show("You have been banned for trying to connect too many times.");
+                            System.Windows.MessageBox.Show("You have been banned for trying to connect too many times.");
                             break;
                     }
                     break;
@@ -213,15 +216,13 @@ namespace DXGI_DesktopDuplication
 
         }
 
-        public async void SetImage(Bitmap bitmap)
+        public async void SetImage(Bitmap bitmap, Int32Rect rect)
         {
             IntPtr pointer = bitmap.GetHbitmap();
-
-            BGImage.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());
+            BGImage.Source = Imaging.CreateBitmapSourceFromHBitmap(pointer, IntPtr.Zero, rect, BitmapSizeOptions.FromEmptyOptions());
             //DeleteObject(pointer);
         }
-     
+
         // Network handshakes for CLIENT
         private async void ConnectRemote_Click(object sender, RoutedEventArgs e)
         {
@@ -256,6 +257,7 @@ namespace DXGI_DesktopDuplication
                 hostScreenWidth = (int)e.Screenshot.ScreenWidth;
                 hostScreenHeight = (int)e.Screenshot.ScreenHeight;
                 GoFullscreen();
+                //TurnOnMouseKeyboard();
             }
             UpdateRegion(screenshot);
         }
@@ -276,18 +278,14 @@ namespace DXGI_DesktopDuplication
                 bitmap.StreamSource = memoryStream;
                 bitmap.EndInit();
 
-                using (Graphics g = Graphics.FromImage(image))
-                {
-                    g.DrawImage(image, new PointF(screenshot.Region.X, screenshot.Region.Y));
-                }
 
                 //await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = BGWritable)));
                 //Debug.WriteLine("bitmap.height = " + bitmap.Height.ToString() + " bitmap.widht =" + bitmap.Width.ToString());
 
                 if ((int)bitmap.Height == hostScreenHeight / ImageDivisor && (int)bitmap.Width == hostScreenWidth / ImageDivisor)
                 {
-                    BGImage.Width = hostScreenWidth;
-                    BGImage.Height = hostScreenHeight;
+                    BGImage.Width = gridkhaki.Width;//hostScreenWidth;
+                    BGImage.Height = gridkhaki.Height; //hostScreenHeight;
                     BGWritable = new WriteableBitmap((BitmapSource)bitmap);
                     buffer = new RenderTargetBitmap((int)BGWritable.Width, (int)BGWritable.Height, BGWritable.DpiX, BGWritable.DpiY, PixelFormats.Pbgra32);
 
@@ -418,32 +416,7 @@ namespace DXGI_DesktopDuplication
             }
         }
 
-        private void BGImage_IO(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
 
-            BGImage.MouseMove += BGImage_MouseMove;
-            //ScrollView.Width = 900;
-            //ScrollView.Height = 600;
-            InstallKeyboard();
-            
-            //Questo bind vale solo mentre si è connessi
-            bindHotkeyCommands();
-           // GoFullscreen();
-
-        }
-
-        private async void MouseKeyboardIO_Checked(object sender, RoutedEventArgs e)
-        {
-
-            BGImage.MouseLeave += BGImage_MouseLeave;
-            BGImage.MouseMove += BGImage_MouseMove;
-            BGImage.MouseDown += BGImage_MouseDown;
-            BGImage.MouseUp += BGImage_MouseUp;
-            
-            InstallKeyboard();
-            bindHotkeyCommands();
-
-        }
 
         private async void BGImage_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -457,15 +430,15 @@ namespace DXGI_DesktopDuplication
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
 
             //this.serverManger.sendMessage
-             var eventMessage =  "C" + " " + "WM_LBUTTONUP" + " " + x + " " + y;
+            var eventMessage = "C" + " " + "WM_LBUTTONUP" + " " + x + " " + y;
             LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
-            Dispatcher.Invoke(new Action(() =>
-            {
-                MousePositionXLabel.Content = Xabs.ToString();
-                MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = eventMessage;
-            }));
-            Console.WriteLine("C" + " " + x + "WM_LBUTTONUP");
+            //Dispatcher.Invoke(new Action(() =>
+            //{
+            //    MousePositionXLabel.Content = Xabs.ToString();
+            //    MousePositionYLabel.Content = Yabs.ToString();
+            //    MouseEventLabel.Content = eventMessage;
+            //}));
+            //Console.WriteLine("C" + " " + x + "WM_LBUTTONUP");
 
         }
 
@@ -474,52 +447,32 @@ namespace DXGI_DesktopDuplication
             double Xabs = e.GetPosition(BGImage).X;
             double Yabs = e.GetPosition(BGImage).Y;
             double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y = Math.Round((Yabs / hostScreenHeight),2);
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
 
             double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
             double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
             // throw new NotImplementedException();
             string eventMessage = "C" + " " + "WM_LBUTTONDOWN" + " " + x + " " + y;
             LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
-            Console.WriteLine("C" + " " + x + "WM_LBUTTONDOWN" );
-            Dispatcher.Invoke(new Action(() =>
-            {
-                MousePositionXLabel.Content = Xabs.ToString();
-                MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = eventMessage;
-            }));
+            Console.WriteLine("C" + " " + x + "WM_LBUTTONDOWN");
+            //Dispatcher.Invoke(new Action(() =>
+            //{
+            //    MousePositionXLabel.Content = Xabs.ToString();
+            //    MousePositionYLabel.Content = Yabs.ToString();
+            //    MouseEventLabel.Content = eventMessage;
+            //}));
 
         }
-        
-        async void  BGImage_MouseMove(object sender, MouseEventArgs e)
+
+
+        private void BGImage_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-
-            double Xabs = e.GetPosition(BGImage).X;
-            double Yabs = e.GetPosition(BGImage).Y;
-            double x = Math.Round((Xabs / hostScreenWidth),2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y = Math.Round((Yabs / hostScreenHeight),2);
-
-            double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
-            double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
-
-            //this.serverManger.sendMessage
-            var eventMessage = ("M" + " " + x + " " + y);
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
-            
-             Dispatcher.Invoke(new Action(() =>
-            {
-                MousePositionXLabel.Content = Xabs.ToString();
-                MousePositionYLabel.Content = Yabs.ToString();
-                MouseEventLabel.Content = eventMessage;
-            }));
+            //UnistallMouseAndKeyboard();
+            //unbindHotkeyCommands();
+            //MouseKeyboardIO.IsChecked = false;
+            Unsubscribe();
         }
 
-        private void BGImage_MouseLeave(object sender, MouseEventArgs e)
-        {
-            UnistallMouseAndKeyboard();
-            unbindHotkeyCommands();
-            MouseKeyboardIO.IsChecked = false;
-        }
 
         private async void UpdateQualityBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -533,7 +486,7 @@ namespace DXGI_DesktopDuplication
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message);
             }
         }
 
@@ -564,11 +517,11 @@ namespace DXGI_DesktopDuplication
                     Debug.WriteLine("DefaultGateway =" + msg2);
                 }
                 myRasDialer.DialAsync();
-                MessageBox.Show("VPN Tunneling enabled");
+                System.Windows.MessageBox.Show("VPN Tunneling enabled");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message);
             }
         }
 
@@ -579,12 +532,37 @@ namespace DXGI_DesktopDuplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            //mouseHook = new RamGecTools.MouseHook();
+            //keyboardHook = new RamGecTools.KeyboardHook();
+            addVirtualKeysDictionary();
         }
 
         private void checkBox_Unchecked(object sender, RoutedEventArgs e)
         {
             myRasDialer.DialAsyncCancel();
 
+        }
+
+        private void TurnOnMouseKeyboard()
+        {
+            //BGImage.MouseEnter += BGImage_MouseEnter;
+            //BGImage.MouseLeave += BGImage_MouseLeave;
+            //BGImage.MouseMove += BGImage_MouseMove;
+            //BGImage.MouseDown += BGImage_MouseDown;
+            //BGImage.MouseUp += BGImage_MouseUp;
+            //InstallKeyboard();
+            //bindHotkeyCommands();
+        }
+
+        private void TurnOffMouseKeyboard()
+        {
+            //BGImage.MouseEnter += BGImage_MouseEnter;
+            //BGImage.MouseLeave -= BGImage_MouseLeave;
+            //BGImage.MouseMove -= BGImage_MouseMove;
+            //BGImage.MouseDown -= BGImage_MouseDown;
+            //BGImage.MouseUp -= BGImage_MouseUp;
+            //UnistallMouseAndKeyboard();
+            //unbindHotkeyCommands();
         }
 
         private void fullscreen_Checked(object sender, RoutedEventArgs e)
@@ -601,11 +579,210 @@ namespace DXGI_DesktopDuplication
         {
             ScrollView.Height = gridkhaki.Height;
             ScrollView.Width = gridkhaki.Width;
+            dashboardGrid.Visibility = Visibility.Hidden;
         }
 
         #endregion
 
         #region Hooks
+
+        #region mouseKyeboardClientSide
+
+        private void SubscribeApplication()
+        {
+            Unsubscribe();
+            Subscribe(Hook.AppEvents());
+        }
+
+        private void SubscribeGlobal()
+        {
+            Unsubscribe();
+            Subscribe(Hook.GlobalEvents());
+        }
+
+        private void Subscribe(IKeyboardMouseEvents events)
+        {
+            Console.WriteLine("Subscribe");
+            m_Events = events;
+            m_Events.KeyDown += M_Events_KeyDown;
+            m_Events.KeyUp += M_Events_KeyUp;
+            m_Events.KeyPress += M_Events_KeyPress;
+
+            BGImage.MouseLeftButtonDown += BGImage_MouseLeftButtonDown;
+            BGImage.MouseLeftButtonUp += BGImage_MouseLeftButtonUp;
+            BGImage.MouseRightButtonDown += BGImage_MouseRightButtonDown;
+            BGImage.MouseRightButtonUp += BGImage_MouseRightButtonUp;
+            
+
+            //m_Events.MouseUp += M_Events_MouseUp;
+            //m_Events.MouseClick += M_Events_MouseClick;
+            //m_Events.MouseDoubleClick += M_Events_MouseDoubleClick;
+            //m_Events.MouseMove += M_Events_MouseMove;
+            //m_Events.MouseDown += M_Events_MouseDown;
+
+        }
+
+        private void BGImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+        
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
+
+            var eventMessage = "C" + " " + "WM_RBUTTONUP" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+        }
+
+        private void BGImage_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
+
+            var eventMessage = "C" + " " + "WM_RBUTTONDOWN" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+
+        }
+
+        private void BGImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
+
+            var eventMessage = "C" + " " + "WM_LBUTTONUP" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+
+        }
+
+        private void BGImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            double Xabs = e.GetPosition(BGImage).X;
+            double Yabs = e.GetPosition(BGImage).Y;
+
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
+
+            var eventMessage = "C" + " " + "WM_LBUTTONDOWN" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+
+        }
+
+        private void M_Events_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            
+        }
+
+        private void M_Events_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+
+        }
+
+        private void M_Events_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            double Xabs = e.X;
+            double Yabs = e.Y;
+            double x = Math.Round((Xabs / hostScreenWidth), 2); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y = Math.Round((Yabs / hostScreenHeight), 2);
+
+            double x1 = Math.Round((Xabs / System.Windows.SystemParameters.PrimaryScreenWidth), 4); //must send relative position REAL/RESOLUTION System.Windows.SystemParameters.PrimaryScreenHeigh
+            double y2 = Math.Round((Yabs / System.Windows.SystemParameters.PrimaryScreenHeight), 4);
+
+            //this.serverManger.sendMessage
+            var eventMessage = "M" + " " + x + " " + y;
+            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage(eventMessage);
+            Console.WriteLine(string.Format("x={0:0000}; y={1:0000}", e.X, e.Y));
+        }
+
+        private void M_Events_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            Console.WriteLine(string.Format("MouseDoubleClick \t\t {0}\n", e.Button));
+        }
+
+        private void M_Events_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            Console.WriteLine(string.Format("MouseClick \t\t {0}\n", e.Button));
+        }
+
+
+
+        private void M_Events_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
+        {
+            
+        }
+        
+        private void M_Events_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            e.SuppressKeyPress = false;
+            int val =  VkeysDictionary[e.KeyData.ToString().ToUpper()];
+
+            if (val != 0)
+            {
+                LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("K" + " " + val + " " + "UP");
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("unrecognized key");
+            }
+            //Console.WriteLine("K" + " " + (int)key + " " + "DOWN");
+            //Console.WriteLine(string.Format("KeyUp  \t\t {0}\n", e.KeyCode));
+        }
+
+        private void M_Events_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            e.SuppressKeyPress = false;
+            try
+            {
+                e.SuppressKeyPress = true;
+                int val = VkeysDictionary[e.KeyData.ToString().ToUpper()];
+                if(val != 0)
+                     LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("K" + " " + val + " " + "DOWN");
+                else
+                {
+                    System.Windows.MessageBox.Show("unrecognized key");
+                } 
+                // Console.WriteLine("K" + " " + (int)key + " " + "DOWN");
+
+               
+            }
+            catch (Exception ex)
+            {
+                //closeOnException(ex.Message);
+                System.Windows.MessageBox.Show("bad key");
+
+            }
+            Console.WriteLine(string.Format("KeyDown  \t\t {0}\n", e.KeyCode));
+            //throw new NotImplementedException();
+        }
+
+        private void Unsubscribe()
+        {
+            if (m_Events == null) return;
+
+            m_Events.KeyDown -= M_Events_KeyDown;
+            m_Events.KeyUp -= M_Events_KeyUp;
+            m_Events.KeyPress -= M_Events_KeyPress;
+
+            //m_Events.MouseUp -= M_Events_MouseUp;
+            //m_Events.MouseClick -= M_Events_MouseClick;
+            //m_Events.MouseDoubleClick -= M_Events_MouseDoubleClick;
+            //m_Events.MouseMove -= M_Events_MouseMove;
+            //m_Events.MouseDown -= M_Events_MouseDown;
+
+            BGImage.MouseLeftButtonDown -= BGImage_MouseLeftButtonDown;
+            BGImage.MouseLeftButtonUp -= BGImage_MouseLeftButtonUp;
+            BGImage.MouseRightButtonDown -= BGImage_MouseRightButtonDown;
+            BGImage.MouseRightButtonUp -= BGImage_MouseRightButtonUp;
+
+            m_Events.Dispose();
+            m_Events = null;
+        }
+        #endregion
 
         #region HooksServer
         private void parseMessage(string buffer)
@@ -629,7 +806,7 @@ namespace DXGI_DesktopDuplication
             {
                 if (commands.GetValue(1).ToString().Equals("WM_LBUTTONDOWN"))
                 {
-                   
+
                     int x = Convert.ToInt16(Double.Parse(commands[2]) * System.Windows.SystemParameters.PrimaryScreenWidth);
                     int y = Convert.ToInt16(Double.Parse(commands[3]) * System.Windows.SystemParameters.PrimaryScreenHeight);
                     NativeMethods.SetCursorPos(x, y);
@@ -698,8 +875,8 @@ namespace DXGI_DesktopDuplication
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.LCONTROL + " " + "UP");
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.LMENU + " " + "UP");
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.KEY_E + " " + "UP");
-            UnistallMouseAndKeyboard();
-            unbindHotkeyCommands(); //rimuovo vincoli su hotkeys
+            //UnistallMouseAndKeyboard();
+            //unbindHotkeyCommands(); //rimuovo vincoli su hotkeys
             this.serverManger.disconnect();
 
         }
@@ -710,23 +887,23 @@ namespace DXGI_DesktopDuplication
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.LCONTROL + " " + "UP");
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.LMENU + " " + "UP");
             this.serverManger.sendMessage("K" + " " + (int)RamGecTools.KeyboardHook.VKeys.KEY_P + " " + "UP");
-            UnistallMouseAndKeyboard();
-            unbindHotkeyCommands();
+            // UnistallMouseAndKeyboard();
+            // unbindHotkeyCommands();
 
         }
 
         private void continueCommunication()
         {
-            InstallKeyboard();
-            bindHotkeyCommands();
+            // InstallKeyboard();
+            //  bindHotkeyCommands();
 
         }
 
         public void closeOnException(String s)
         {
             //MessageBox.Show(s);
-            UnistallMouseAndKeyboard();
-            unbindHotkeyCommands(); //rimuovo vincoli su hotkeys
+            // UnistallMouseAndKeyboard();
+            //  unbindHotkeyCommands(); //rimuovo vincoli su hotkeys
             this.serverManger.disconnect();
         }
 
@@ -783,8 +960,9 @@ namespace DXGI_DesktopDuplication
 
         #region HooksClient
         //TODO: passare un'oggetto al server in modo che questo possa eseguire azione
-        void keyboardHook_KeyPress(int op, RamGecTools.KeyboardHook.VKeys key)
+        async void keyboardHook_KeyPress(int op, RamGecTools.KeyboardHook.VKeys key)
         {
+
             try
             {
                 if (op == 0)
@@ -806,7 +984,7 @@ namespace DXGI_DesktopDuplication
             catch (Exception ex)
             {
                 closeOnException(ex.Message);
-                MessageBox.Show("La connessione si è interrotta");
+                System.Windows.MessageBox.Show("La connessione si è interrotta");
 
             }
         }
@@ -818,10 +996,9 @@ namespace DXGI_DesktopDuplication
          */
         void keyboardHook_HotKeyPress(int virtualKeyCode)
         {
-
-            //this.serverManger.sendMessage
             LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("K" + " " + (int)virtualKeyCode + " " + "DOWN");
             Console.WriteLine("K" + " " + (int)virtualKeyCode + " " + "DOWN");
+
         }
 
         void mouseHook_MouseEvent(int type, RamGecTools.MouseHook.MSLLHOOKSTRUCT mouse, RamGecTools.MouseHook.MouseMessages move)
@@ -849,86 +1026,137 @@ namespace DXGI_DesktopDuplication
             }
         }
 
-        private void MouseWheelEventHandler(object sender, MouseWheelEventArgs e)
+        public void addVirtualKeysDictionary()
         {
-            LiveControlManagerClient.Provider.sendMouseKeyboardStateMessage("W" + " " + ((int)e.Delta / 120).ToString());
+            VkeysDictionary = new Dictionary<string, int>();
+
+            VkeysDictionary.Add("BACK", 0x08);        // BACKSPACE key
+            VkeysDictionary.Add("TAB", 0x09);         // TAB key
+            VkeysDictionary.Add("CLEAR", 0x0C);       // CLEAR key
+            VkeysDictionary.Add("RETURN", 0x0D);      // ENTER key
+            VkeysDictionary.Add("SHIFT", 0x10);       // SHIFT key
+            VkeysDictionary.Add("CONTROL", 0x11);     // CTRL key
+            VkeysDictionary.Add("MENU", 0x12);        // ALT key
+            VkeysDictionary.Add("PAUSE", 0x13);       // PAUSE key
+            VkeysDictionary.Add("CAPITAL", 0x14);     // CAPS LOCK key
+            VkeysDictionary.Add("KANA", 0x15);        // Input Method Editor (IME) Kana mode
+            VkeysDictionary.Add("HANGUL", 0x15);      // IME Hangul mode
+            VkeysDictionary.Add("JUNJA", 0x17);       // IME Junja mode
+            VkeysDictionary.Add("FINAL", 0x18);       // IME final mode
+            VkeysDictionary.Add("HANJA", 0x19);      // IME Hanja mode
+            VkeysDictionary.Add("KANJI", 0x19);       // IME Kanji mode
+            VkeysDictionary.Add("ESCAPE", 0x1B);      // ESC key
+            VkeysDictionary.Add("CONVERT", 0x1C);     // IME convert
+            VkeysDictionary.Add("NONCONVERT", 0x1D);  // IME nonconvert
+            VkeysDictionary.Add("ACCEPT", 0x1E);      // IME accept
+            VkeysDictionary.Add("MODECHANGE", 0x1F);  // IME mode change request
+            VkeysDictionary.Add("SPACE", 0x20);      // SPACEBAR
+            VkeysDictionary.Add("PRIOR", 0x21);       // PAGE UP key
+            VkeysDictionary.Add("NEXT", 0x22);        // PAGE DOWN key
+            VkeysDictionary.Add("END", 0x23);         // END key
+            VkeysDictionary.Add("HOME", 0x24);        // HOME key
+            VkeysDictionary.Add("LEFT", 0x25);        // LEFT ARROW key
+            VkeysDictionary.Add("UP", 0x26);       // UP ARROW key
+            VkeysDictionary.Add("RIGHT", 0x27);       // RIGHT ARROW key
+            VkeysDictionary.Add("DOWN", 0x28);        // DOWN ARROW key
+            VkeysDictionary.Add("SELECT", 0x29);      // SELECT key
+            VkeysDictionary.Add("PRINT", 0x2A);       // PRINT key
+            VkeysDictionary.Add("EXECUTE", 0x2B);     // EXECUTE key
+            VkeysDictionary.Add("SNAPSHOT", 0x2C);    // PRINT SCREEN key
+            VkeysDictionary.Add("INSERT", 0x2D);      // INS key
+            VkeysDictionary.Add("DELETE", 0x2E);      // DEL key
+            VkeysDictionary.Add("HELP", 0x2F);        // HELP key
+            VkeysDictionary.Add("D0", 0x30);       // 0 key
+            VkeysDictionary.Add("D1", 0x31);       // 1 key
+            VkeysDictionary.Add("D2", 0x32);       // 2 key
+            VkeysDictionary.Add("D3", 0x33);       // 3 key
+            VkeysDictionary.Add("D4", 0x34);       // 4 key
+            VkeysDictionary.Add("D5", 0x35);       // 5 key
+            VkeysDictionary.Add("D6", 0x36);       // 6 key
+            VkeysDictionary.Add("D7", 0x37);       // 7 key
+            VkeysDictionary.Add("D8", 0x38);       // 8 key
+            VkeysDictionary.Add("D9", 0x39);       // 9 key
+            VkeysDictionary.Add("A", 0x41);       // A key
+            VkeysDictionary.Add("B", 0x42);       // B key
+            VkeysDictionary.Add("C", 0x43);       // C key
+            VkeysDictionary.Add("D", 0x44);       // D key
+            VkeysDictionary.Add("E", 0x45);       // E key
+            VkeysDictionary.Add("F", 0x46);       // F key
+            VkeysDictionary.Add("G", 0x47);       // G key
+            VkeysDictionary.Add("H", 0x48);       // H key
+            VkeysDictionary.Add("I", 0x49);       // I key
+            VkeysDictionary.Add("J", 0x4A);       // J key
+            VkeysDictionary.Add("K", 0x4B);       // K key
+            VkeysDictionary.Add("L", 0x4C);       // L key
+            VkeysDictionary.Add("M", 0x4D);       // M key
+            VkeysDictionary.Add("N", 0x4E);       // N key
+            VkeysDictionary.Add("O", 0x4F);       // O key
+            VkeysDictionary.Add("P", 0x50);       // P key
+            VkeysDictionary.Add("Q", 0x51);       // Q key
+            VkeysDictionary.Add("R", 0x52);       // R key
+            VkeysDictionary.Add("S", 0x53);       // S key
+            VkeysDictionary.Add("T", 0x54);       // T key
+            VkeysDictionary.Add("U", 0x55);       // U key
+            VkeysDictionary.Add("V", 0x56);       // V key
+            VkeysDictionary.Add("W", 0x57);       // W key
+            VkeysDictionary.Add("X", 0x58);       // X key
+            VkeysDictionary.Add("Y", 0x59);       // Y key
+            VkeysDictionary.Add("Z", 0x5A);       // Z key
+            VkeysDictionary.Add("LWin", 0x5B);        // Left Windows key (Microsoft Natural keyboard)
+            VkeysDictionary.Add("RWin", 0x5C);        // Right Windows key (Natural keyboard)
+            VkeysDictionary.Add("APPS", 0x5D);        // Applications key (Natural keyboard)
+            VkeysDictionary.Add("Sleep", 0x5F);      // Computer Sleep key
+            VkeysDictionary.Add("NUMPAD0", 0x60);     // Numeric keypad 0 key
+            VkeysDictionary.Add("NUMPAD1", 0x61);     // Numeric keypad 1 key
+            VkeysDictionary.Add("NUMPAD2", 0x62);     // Numeric keypad 2 key
+            VkeysDictionary.Add("NUMPAD3", 0x63);     // Numeric keypad 3 key
+            VkeysDictionary.Add("NUMPAD4", 0x64);     // Numeric keypad 4 key
+            VkeysDictionary.Add("NUMPAD5", 0x65);     // Numeric keypad 5 key
+            VkeysDictionary.Add("NUMPAD6", 0x66);     // Numeric keypad 6 key
+            VkeysDictionary.Add("NUMPAD7", 0x67);     // Numeric keypad 7 key
+            VkeysDictionary.Add("NUMPAD8", 0x68);     // Numeric keypad 8 key
+            VkeysDictionary.Add("NUMPAD9", 0x69);     // Numeric keypad 9 key
+            VkeysDictionary.Add("MULTIPLY", 0x6A);    // Multiply key
+            VkeysDictionary.Add("ADD", 0x6B);         // Add key
+            VkeysDictionary.Add("SEPARATOR", 0x6C);   // Separator key
+            VkeysDictionary.Add("SUBTRACT", 0x6D);    // Subtract key
+            VkeysDictionary.Add("DECIMAL", 0x6E);     // Decimal key
+            VkeysDictionary.Add("DIVIDE", 0x6F);      // Divide key
+            VkeysDictionary.Add("F1", 0x70);          // F1 key
+            VkeysDictionary.Add("F2", 0x71);          // F2 key
+            VkeysDictionary.Add("F3", 0x72);          // F3 key
+            VkeysDictionary.Add("F4", 0x73);          // F4 key
+            VkeysDictionary.Add("F5", 0x74);          // F5 key
+            VkeysDictionary.Add("F6", 0x75);          // F6 key
+            VkeysDictionary.Add("F7", 0x76);          // F7 key
+            VkeysDictionary.Add("F8", 0x77);          // F8 key
+            VkeysDictionary.Add("F9", 0x78);          // F9 key
+            VkeysDictionary.Add("F10", 0x79);         // F10 key
+            VkeysDictionary.Add("F11", 0x7A);         // F11 key
+            VkeysDictionary.Add("F12", 0x7B);         // F12 key
+            VkeysDictionary.Add("F13", 0x7C);         // F13 key
+            VkeysDictionary.Add("F14", 0x7D);         // F14 key
+            VkeysDictionary.Add("F15", 0x7E);         // F15 key
+            VkeysDictionary.Add("F16", 0x7F);         // F16 key
+            VkeysDictionary.Add("F17", 0x80);         // F17 key  
+            VkeysDictionary.Add("F18", 0x81);         // F18 key  
+            VkeysDictionary.Add("F19", 0x82);         // F19 key  
+            VkeysDictionary.Add("F20", 0x83);         // F20 key  
+            VkeysDictionary.Add("F21", 0x84);         // F21 key  
+            VkeysDictionary.Add("F22", 0x85);         // F22 key, (PPC only) Key used to lock device.
+            VkeysDictionary.Add("F23", 0x86);         // F23 key  
+            VkeysDictionary.Add("F24", 0x87);         // F24 key  
+            VkeysDictionary.Add("NUMLOCK", 0x90);     // NUM LOCK key
+            VkeysDictionary.Add("SCROLL", 0x91);      // SCROLL LOCK key
+            VkeysDictionary.Add("LSHIFT", 0xA0);      // Left SHIFT key
+            VkeysDictionary.Add("RSHIFT", 0xA1);      // Right SHIFT key
+            VkeysDictionary.Add("LCONTROLKEY", 0xA2);    // Left CONTROL key
+            VkeysDictionary.Add("RCONTROLKEY", 0xA3);    // Right CONTROL key
+            VkeysDictionary.Add("LMENU", 0xA4);       // Left MENU key
+            VkeysDictionary.Add("RMENU", 0xA5);       // Right MENU key
+
+
         }
-        public KeyEventHandler wnd_KeyDown { get; set; }
-
-        private void InstallKeyboard()
-        {
-            //Insatllo keyboard 
-            keyboardHook.KeyPress += new RamGecTools.KeyboardHook.myKeyboardHookCallback(keyboardHook_KeyPress);
-            //Questo qui sotto era un vecchio handler che usavo per i problemi degli shortcut, momentaneamente lascio commentato
-            keyboardHook.HotKeyPress += new RamGecTools.KeyboardHook.myKeyboardHotkeyCallback(keyboardHook_HotKeyPress);
-            keyboardHook.Install();
-            //Installo Mouse
-            //mouseHook.MouseEvent += new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
-            //mouseHook.Install();
-            //this.MouseWheel += MouseWheelEventHandler;
-        }
-
-        private void UnistallMouseAndKeyboard()
-        {
-            keyboardHook.KeyPress -= new RamGecTools.KeyboardHook.myKeyboardHookCallback(keyboardHook_KeyPress);
-            //mouseHook.MouseEvent -= new RamGecTools.MouseHook.myMouseHookCallback(mouseHook_MouseEvent);
-            keyboardHook.Uninstall();
-            //mouseHook.Uninstall();
-            //this.MouseWheel += MouseWheelEventHandler;
-
-        }
-
-
-        private void bindHotkeyCommands()
-        {
-            try
-            {
-                //aggancio CTRL+ALT+P con pauseCommunication
-                RoutedCommand pauseComm = new RoutedCommand();
-                pauseComm.InputGestures.Add(new KeyGesture(Key.P, ModifierKeys.Control | ModifierKeys.Alt));
-                CommandBindings.Add(new CommandBinding(pauseComm, pauseCommunication));
-                //aggancio CTRL+ALT+E con closeCommunication
-                RoutedCommand closeComm = new RoutedCommand();
-                closeComm.InputGestures.Add(new KeyGesture(Key.E, ModifierKeys.Control | ModifierKeys.Alt));
-                CommandBindings.Add(new CommandBinding(closeComm, closeCommunication));
-                //aggancio CTRL+ALT+N per next server
-                RoutedCommand nextServer = new RoutedCommand();
-                nextServer.InputGestures.Add(new KeyGesture(Key.N, ModifierKeys.Control | ModifierKeys.Alt));
-                CommandBindings.Add(new CommandBinding(nextServer, switchToNextServer));
-                //aggancio CTRL+ALT+X per inviare mia clipboard
-                RoutedCommand sendClipboardcmd = new RoutedCommand();
-                sendClipboardcmd.InputGestures.Add(new KeyGesture(Key.X, ModifierKeys.Control | ModifierKeys.Alt));
-                CommandBindings.Add(new CommandBinding(sendClipboardcmd, sendClipboard));
-                //aggancio CTRL+ALT+Z per ricevere la clipboard dal server
-                RoutedCommand gimmeClipboardcmd = new RoutedCommand();
-                gimmeClipboardcmd.InputGestures.Add(new KeyGesture(Key.Z, ModifierKeys.Control | ModifierKeys.Alt));
-                CommandBindings.Add(new CommandBinding(gimmeClipboardcmd, gimmeClipboard));
-
-            }
-            catch (Exception e)
-            {
-                //MessageBox.Show("bindHotKeyCommands: " + e.Message);
-                Application.Current.Shutdown();
-            }
-        }
-
-        private void unbindHotkeyCommands()
-        {
-            try
-            {
-                CommandBindings.Clear();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Cannot unbind : " + ex.Message);
-            }
-        }
-
-        private void wnd_Closing(object sender, CancelEventArgs e)
-        {
-            e.Cancel = true; //AVOID ALT F4
-        }
-        #endregion
 
         public enum MouseMessages
         {
@@ -943,6 +1171,68 @@ namespace DXGI_DesktopDuplication
             WM_MBUTTONUP = 0x0208
         }
         #endregion
+        #endregion
+
+        private void TURNMouseON(object sender, RoutedEventArgs e)
+        {
+            SubscribeGlobal();
+        }
 
     }
+
+    class INIFile
+    {
+        private string filePath;
+
+        [DllImport("kernel32")]
+        private static extern long WritePrivateProfileString(string section,
+        string key,
+        string val,
+        string filePath);
+
+        [DllImport("kernel32")]
+        private static extern int GetPrivateProfileString(string section,
+        string key,
+        string def,
+        StringBuilder retVal,
+        int size,
+        string filePath);
+
+        public INIFile(string filePath)
+        {
+            this.filePath = filePath;
+        }
+
+        public void Write(string section, string key, string value)
+        {
+            WritePrivateProfileString(section, key, value.ToLower(), this.filePath);
+        }
+
+        public string Read(string section, string key)
+        {
+            StringBuilder SB = new StringBuilder(255);
+            int i = GetPrivateProfileString(section, key, "", SB, 255, this.filePath);
+            return SB.ToString();
+        }
+
+        public string FilePath
+        {
+            get { return this.filePath; }
+            set { this.filePath = value; }
+        }
+    }
+    public partial class NativeMethods
+    {
+        /// Return Type: BOOL->int  
+        ///X: int  
+        ///Y: int  
+        [System.Runtime.InteropServices.DllImportAttribute("user32.dll", EntryPoint = "SetCursorPos")]
+        [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        public static extern bool SetCursorPos(int X, int Y);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, UIntPtr dwExtraInfo);
+
+    }
+
 }
