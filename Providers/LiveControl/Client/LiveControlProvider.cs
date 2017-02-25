@@ -54,7 +54,6 @@ namespace Providers.LiveControl.Client
         {
             Trace.WriteLine(String.Format("Received ResponseScreenshotMessage, Number: {0}, Size: {1} KB", e.Message.Number, GetKBFromBytes(e.Message.Image.Length)));
             uint num = e.Message.Number;
-
             // Slowly build our image bytes
             Buffer.BlockCopy(e.Message.Image, 0, pendingScreenshots[num].Image, e.Message.SendIndex * Server.LiveControllerProvider8.mtu, e.Message.Image.Length);
         }
@@ -62,6 +61,8 @@ namespace Providers.LiveControl.Client
         private void OnResponseEndScreenshotMessageReceived(MessageEventArgs<ResponseEndScreenshotMessage> e)
         {
             Trace.WriteLine("Received ResponseEndScreenshotMessage.");
+            //Screenshot s = new Screenshot()
+           pendingScreenshots[e.Message.Number].Image = Lz4Net.Lz4.DecompressBytes(pendingScreenshots[e.Message.Number].Image);
             OnScreenshotReceived(this, new ScreenshotMessageEventArgs() { Screenshot = pendingScreenshots[e.Message.Number] });
             pendingScreenshots.Remove(e.Message.Number);
         }
@@ -74,15 +75,12 @@ namespace Providers.LiveControl.Client
         {
             Network.SendMessage(new RequestScreenshotMessage());
         }
-
-
         public async Task ChangeColorDepth(int bpp)
         {
             var RequestNewBpp = new RequestChangeColorDepth(bpp);
             Network.SendMessage(RequestNewBpp);
             Server.LiveControllerProvider8.bpp = bpp;
         }
-
         public async Task ChangeScreenShareDynamics(int mtu, int quality)
         {
             var RequestNewScreen = new RequestScreenshotMessage(mtu, quality);
@@ -91,15 +89,11 @@ namespace Providers.LiveControl.Client
             Server.LiveControllerProvider8.mtu = mtu;
             Server.LiveControllerProvider8.ImageQuality = quality; 
         }
-
         private static float GetKBFromBytes(long bytes)
         {
             return (float)((float)bytes / (float)1024);
         }
-
         public event EventHandler<ScreenshotMessageEventArgs> OnScreenshotReceived;
-
- 
         public void sendMouseKeyboardStateMessage(String message)
         {
             Network.SendMessage(new MouseKeyboardNotification() {data = message });

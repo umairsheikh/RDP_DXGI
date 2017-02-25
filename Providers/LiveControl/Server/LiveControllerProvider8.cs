@@ -203,9 +203,11 @@ namespace Providers.LiveControl.Server
                
          }
 
-        private void SendFragmentedBitmap(byte[] bitmapBytes, Rectangle region)
+        private void SendFragmentedBitmap(byte[] bitmapBytesRecieved, Rectangle region)
         {
             // Send ResponseBeginScreenshotMessage
+           byte[] bitmapBytes = Lz4Net.Lz4.CompressBytes(bitmapBytesRecieved, Lz4Net.Lz4Mode.HighCompression);
+
             var beginMessage = new ResponseBeginScreenshotMessage();
             beginMessage.Number = ++ScreenshotCounter;
             beginMessage.Region = region;
