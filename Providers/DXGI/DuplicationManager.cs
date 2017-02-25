@@ -201,10 +201,7 @@ namespace DXGI_DesktopDuplication
                         if (i > 0)
                         {
                             GetDirtyAndMoveRects(ref data, screenResource, duplicateFrameInformation);
-
-
-                            //display results
-                            if (data.MoveRectangles != null)
+                             if (data.MoveRectangles != null)
                                 foreach (OutputDuplicateMoveRectangle moveRectangle in data.MoveRectangles)
                                 {
                                     Console.WriteLine("MoveRectangle : {0}", (moveRectangle.DestinationRect));
@@ -272,22 +269,17 @@ namespace DXGI_DesktopDuplication
 
                                         }
                                     }
-                                    //else
-                                    //{
-                                    //    Bitmap target = Texture2DToBitmap();
-                                    //    Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
-                                    //    //Grayscale(target);
-                                    //    FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
-                                    //}
+                                   
                                 }
                             }
-                            else 
+                            else
                             {
                                 if (ColorDepth == 4)
                                 {
                                     Bitmap target = Texture2DToBitmap();
                                     Bitmap NewPicture = target.Clone(new System.Drawing.Rectangle(0, 0, target.Width, target.Height), System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
                                     //Grayscale(target);
+
                                     FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
                                 }
                                 else if (ColorDepth == 8)
@@ -321,6 +313,7 @@ namespace DXGI_DesktopDuplication
                                     FireNewFrameEvent(NewPicture, new System.Drawing.Rectangle(0, 0, width, height));
                                 }
                             }
+
                             counter++;
                             dirtyCapture = false;
                             captured = true;
@@ -468,7 +461,7 @@ namespace DXGI_DesktopDuplication
         public Bitmap Texture2DToBitmap()
         {
 
-            //return ExtractRect(0, 0, width, height);
+            return ExtractRect(0, 0, width, height);
 
             // Get the desktop capture screenTexture
             DataBox mapSource = device.ImmediateContext.MapSubresource(screenTexture, 0, MapMode.Read,
@@ -507,7 +500,7 @@ namespace DXGI_DesktopDuplication
                 MapFlags.None);
 
             // Create Drawing.Bitmap
-            var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppRgb); //不能是ARGB
+            var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb); //不能是ARGB
             var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
 
             // Copy pixels from screen capture Texture to GDI bitmap
