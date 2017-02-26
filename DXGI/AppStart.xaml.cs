@@ -382,8 +382,6 @@ namespace DXGI_DesktopDuplication
             }
         }
 
-
-
         private async void BGImage_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // throw new NotImplementedException();
@@ -430,7 +428,6 @@ namespace DXGI_DesktopDuplication
 
         }
 
-
         private void BGImage_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             //UnistallMouseAndKeyboard();
@@ -438,7 +435,6 @@ namespace DXGI_DesktopDuplication
             //MouseKeyboardIO.IsChecked = false;
             Unsubscribe();
         }
-
 
         private async void UpdateQualityBtn_Click(object sender, RoutedEventArgs e)
         {

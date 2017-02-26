@@ -101,7 +101,6 @@ namespace Providers.LiveControl.Client
         {
             Network.SendMessage(new MouseKeyboardNotification() {data = message });
         }
-
         static public byte[] Decompress(byte[] gzBuffer)
         {
             var ms = new MemoryStream();
@@ -116,6 +115,5 @@ namespace Providers.LiveControl.Client
 
             return buffer;
         }
-
     }
 }
