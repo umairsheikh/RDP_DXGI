@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using WindowsInput;
+using System.IO.Compression;
 
 namespace Providers.LiveControl.Server
 {
@@ -290,6 +291,34 @@ namespace Providers.LiveControl.Server
         }
 
         public event EventHandler<DesktopChangedEventArgs> OnDesktopChanged;
+
+        static public byte[] Compress(byte[] buffer)
+        {
+            var ms = new MemoryStream();
+            var zip = new GZipStream(ms, CompressionMode.Compress, true);
+            zip.Write(buffer, 0, buffer.Length);
+            zip.Close();
+            ms.Position = 0;
+            var compressed = new byte[ms.Length + 4];
+            Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, compressed, 0, 4);
+            ms.Read(compressed, 4, compressed.Length - 4);
+            return compressed;
+        }
+
+        static public byte[] Decompress(byte[] gzBuffer)
+        {
+            var ms = new MemoryStream();
+            var msgLength = BitConverter.ToInt32(gzBuffer, 0);
+            ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
+
+            var buffer = new byte[msgLength];
+
+            ms.Position = 0;
+            var zip = new GZipStream(ms, CompressionMode.Decompress);
+            zip.Read(buffer, 0, buffer.Length);
+
+            return buffer;
+        }
 
     }
 }
