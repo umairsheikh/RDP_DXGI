@@ -289,7 +289,7 @@ namespace DXGI_DesktopDuplication
                     var drawingVisual = new DrawingVisual();
                     using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                     {
-                        drawingContext.DrawImage(BGWritable, new Rect(0, 0, bitmap.Width, bitmap.Height));
+                        drawingContext.DrawImage(bitmap, new Rect(0, 0, bitmap.Width, bitmap.Height));
                     }
                     buffer.Render(drawingVisual);
                     await Task.Factory.StartNew(() => Dispatcher.BeginInvoke((Action)(() => BGImage.Source = buffer)));

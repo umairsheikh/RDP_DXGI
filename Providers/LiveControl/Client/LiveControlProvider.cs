@@ -10,6 +10,7 @@ using Network;
 using Network.Messages.LiveControl;
 using System.Threading.Tasks;
 using Lidgren.Network;
+using System.IO.Compression;
 
 namespace Providers.LiveControl.Client
 {
@@ -62,7 +63,9 @@ namespace Providers.LiveControl.Client
         {
             Trace.WriteLine("Received ResponseEndScreenshotMessage.");
             //Screenshot s = new Screenshot()
-           pendingScreenshots[e.Message.Number].Image = Lz4Net.Lz4.DecompressBytes(pendingScreenshots[e.Message.Number].Image);
+            var compressedBitmap = pendingScreenshots[e.Message.Number].Image;
+            var decompress = Decompress(compressedBitmap);
+            pendingScreenshots[e.Message.Number].Image = Lz4Net.Lz4.DecompressBytes(decompress);
             OnScreenshotReceived(this, new ScreenshotMessageEventArgs() { Screenshot = pendingScreenshots[e.Message.Number] });
             pendingScreenshots.Remove(e.Message.Number);
         }
@@ -99,6 +102,20 @@ namespace Providers.LiveControl.Client
             Network.SendMessage(new MouseKeyboardNotification() {data = message });
         }
 
-      
+        static public byte[] Decompress(byte[] gzBuffer)
+        {
+            var ms = new MemoryStream();
+            var msgLength = BitConverter.ToInt32(gzBuffer, 0);
+            ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
+
+            var buffer = new byte[msgLength];
+
+            ms.Position = 0;
+            var zip = new GZipStream(ms, CompressionMode.Decompress);
+            zip.Read(buffer, 0, buffer.Length);
+
+            return buffer;
+        }
+
     }
 }
